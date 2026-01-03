@@ -3,22 +3,40 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-  <title>Timer de Pregação • Normal</title>
+  <title>Timer de Pregação</title>
+
+  <!-- ✅ PWA / Ícones (Android + iOS) -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <!-- ✅ Tema preto+mostarda (remove fundo branco e melhora splash) -->
+  <meta name="theme-color" content="#F4B400">
+  <meta name="background-color" content="#0B0B0B">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <style>
     :root{
-      --bg1:#f6f7fb; --bg2:#eef1ff;
-      --card:#ffffffd8;
-      --text:#0f172a; --muted:rgba(15,23,42,.58);
-      --border:rgba(15,23,42,.10);
-      --shadow:0 12px 28px rgba(15,23,42,.10);
-      --shadow2:0 6px 14px rgba(15,23,42,.06);
+      /* Theme */
+      --bg:#0b0b0b;
+      --bg2:#111111;
+      --card: rgba(255,255,255,0.06);
+      --card2: rgba(255,255,255,0.08);
+      --text:#f8fafc;
+      --muted:rgba(248,250,252,.62);
+      --border:rgba(255,255,255,.12);
 
-      --primary:#4f6cf7;
-      --primarySoft:rgba(79,108,247,.12);
+      /* Accent (Mostarda) */
+      --primary:#F4B400;
+      --primarySoft:rgba(244,180,0,.14);
+
+      /* Status */
       --good:#22c55e;
       --warn:#f59e0b;
       --danger:#ef4444;
+
+      --shadow: 0 14px 36px rgba(0,0,0,.45);
+      --shadow2: 0 8px 18px rgba(0,0,0,.35);
 
       --r:18px;
     }
@@ -27,9 +45,10 @@
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: radial-gradient(1200px 700px at 20% 10%, rgba(79,108,247,.16), transparent),
-                  radial-gradient(900px 550px at 90% 15%, rgba(245,158,11,.11), transparent),
-                  linear-gradient(180deg, var(--bg2), var(--bg1));
+      background:
+        radial-gradient(900px 650px at 20% 10%, rgba(244,180,0,0.20), transparent),
+        radial-gradient(900px 650px at 90% 20%, rgba(0,0,0,0.7), transparent),
+        linear-gradient(180deg, var(--bg), var(--bg2));
       color:var(--text);
       min-height:100vh;
       display:flex;
@@ -47,7 +66,7 @@
     }
 
     .card{
-      background: var(--card);
+      background: linear-gradient(180deg, var(--card2), var(--card));
       border:1px solid var(--border);
       border-radius: var(--r);
       padding: 14px;
@@ -69,22 +88,23 @@
       width:100%;
       padding: 11px 12px;
       border-radius: 14px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.96);
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.35);
       color: var(--text);
       font-size: 14px;
       outline:none;
     }
+    input::placeholder{ color: rgba(248,250,252,0.42); }
     input:focus{
-      border-color: rgba(79,108,247,0.40);
-      box-shadow: 0 0 0 4px rgba(79,108,247,0.10);
+      border-color: rgba(244,180,0,0.55);
+      box-shadow: 0 0 0 4px rgba(244,180,0,0.12);
     }
 
-    /* Buttons (premium small) */
+    /* Buttons (premium, smaller) */
     .btn{
       width:100%;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,0.92);
+      border:1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
       color:var(--text);
       padding: 10px 12px;
       border-radius: 999px;
@@ -101,12 +121,28 @@
       user-select:none;
     }
     .btn:active{ transform: scale(0.985); }
-    .btn:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+    .btn:disabled{ opacity:.45; cursor:not-allowed; box-shadow:none; }
 
-    .btn.primary{ border-color: rgba(79,108,247,.30); background: rgba(79,108,247,.10); color:#2133c7; }
-    .btn.good{ border-color: rgba(34,197,94,.25); background: rgba(34,197,94,.10); color:#166534; }
-    .btn.warn{ border-color: rgba(245,158,11,.25); background: rgba(245,158,11,.10); color:#92400e; }
-    .btn.danger{ border-color: rgba(239,68,68,.25); background: rgba(239,68,68,.10); color:#991b1b; }
+    .btn.primary{
+      border-color: rgba(244,180,0,0.40);
+      background: rgba(244,180,0,0.14);
+      color: #ffe07a;
+    }
+    .btn.good{
+      border-color: rgba(34,197,94,.30);
+      background: rgba(34,197,94,.12);
+      color: #bbf7d0;
+    }
+    .btn.warn{
+      border-color: rgba(245,158,11,.30);
+      background: rgba(245,158,11,.12);
+      color: #ffd7a3;
+    }
+    .btn.danger{
+      border-color: rgba(239,68,68,.30);
+      background: rgba(239,68,68,.12);
+      color: #fecaca;
+    }
     .btn .ic{ font-size: 14px; opacity: .95; }
 
     .hidden{ display:none; }
@@ -114,10 +150,10 @@
     /* Plan */
     .plan{
       margin-top:10px;
-      border:1px solid var(--border);
+      border:1px solid rgba(255,255,255,0.12);
       border-radius: 16px;
       overflow:hidden;
-      background: rgba(255,255,255,0.95);
+      background: rgba(255,255,255,0.04);
     }
     .planRow{
       display:flex;
@@ -125,7 +161,7 @@
       align-items:center;
       gap:10px;
       padding: 12px;
-      border-top:1px solid rgba(15,23,42,0.06);
+      border-top:1px solid rgba(255,255,255,0.08);
     }
     .planRow:first-child{ border-top:none; }
     .planRow b{ font-size: 13px; }
@@ -133,8 +169,8 @@
     .planRow .mins{ display:flex; justify-content:flex-end; align-items:center; min-width: 120px; gap:10px; }
     .planRow input{ max-width: 84px; padding: 9px 10px; border-radius: 12px; font-size: 13px; }
     .activeRow{
-      background: rgba(79,108,247,0.10);
-      border-left: 4px solid rgba(79,108,247,0.85);
+      background: rgba(244,180,0,0.14);
+      border-left: 4px solid rgba(244,180,0,0.88);
     }
 
     /* Timer layout */
@@ -169,8 +205,8 @@
       margin-top: 10px;
     }
     .metric{
-      background: rgba(255,255,255,0.95);
-      border: 1px solid rgba(15,23,42,0.10);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
       border-radius: 14px;
       padding: 10px 12px;
       box-shadow: var(--shadow2);
@@ -186,6 +222,7 @@
       font-weight: 1000;
       margin-top: 14px;
       letter-spacing:-.02em;
+      color: #fff;
     }
 
     /* ===== Timer Normal Premium ===== */
@@ -196,10 +233,11 @@
       letter-spacing: -0.05em;
       margin-top: 10px;
       margin-bottom: 6px;
-      color: #0f172a;
+      color: #fff;
       font-variant-numeric: tabular-nums;
       animation: breathe 1.8s ease-in-out infinite;
       user-select:none;
+      text-shadow: 0 10px 30px rgba(0,0,0,0.55);
     }
 
     @keyframes breathe{
@@ -212,8 +250,8 @@
     .barOuter{
       height: 12px;
       border-radius: 999px;
-      border: 1px solid rgba(15,23,42,0.10);
-      background: rgba(15,23,42,0.05);
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
       overflow:hidden;
       margin: 14px 0 10px 0;
     }
@@ -221,9 +259,10 @@
       height:100%;
       width:0%;
       border-radius:999px;
-      background: rgba(79,108,247,0.85);
+      background: rgba(244,180,0,0.95);
       transition: width .12s linear;
       position:relative;
+      box-shadow: 0 12px 24px rgba(244,180,0,0.18);
     }
     .barInner::after{
       content:"";
@@ -244,8 +283,8 @@
       font-weight: 950;
       padding: 11px 12px;
       border-radius: 14px;
-      border: 1px solid rgba(15,23,42,0.10);
-      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
       margin-top: 8px;
     }
 
@@ -258,7 +297,7 @@
     .footerTip{
       text-align:center;
       font-size: 11px;
-      color: rgba(15,23,42,0.55);
+      color: rgba(248,250,252,0.55);
       margin-top: 12px;
       line-height:1.35;
     }
@@ -289,24 +328,14 @@
     }
   </style>
 </head>
-<link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" href="icons/icon-192.png">
-<meta name="theme-color" content="#F4B400">
-
-
-<script>
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./service-worker.js");
-  }
-</script>
 
 <body>
 <div class="container">
 
   <!-- SETUP -->
   <div id="setupCard" class="card">
-    <h1>⏱️ Timer de Pregação • Normal</h1>
-    <p class="muted">Introdução + N tópicos + Conclusão • Android • vibração • templates.</p>
+    <h1>⏱️ Timer de Pregação</h1>
+    <p class="muted">Tema preto + mostarda • Android • vibração • templates.</p>
 
     <label class="muted">Título da Pregação</label>
     <input id="sermonTitle" placeholder="Ex: A fé que vence"/>
@@ -544,7 +573,7 @@ function renderLivePlan(){
 }
 
 /* =============== Templates =============== */
-const STORAGE_KEY = "pregacao_templates_normal_premium_v1";
+const STORAGE_KEY = "pregacao_templates_black_mustard_v1";
 function getTemplates(){
   try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); }
   catch(e){ return []; }
@@ -651,8 +680,6 @@ function goToTopic(idx){
   const next = plan[currentIndex+1];
   $("nextHint").textContent = next ? "Próximo: "+next.title : "Próximo: (fim)";
   $("metricCurrentTotal").textContent = formatTime(plan[currentIndex].durationSec);
-
-  // Render inicial do timer
   $("timeDisplay").textContent = formatTime(plan[currentIndex].durationSec);
 
   renderLivePlan();
@@ -837,6 +864,14 @@ async function releaseWakeLock(){
   }catch(e){}
 }
 $("wakelockBtn").addEventListener("click", () => wakeLock ? releaseWakeLock() : requestWakeLock());
+
+/* ✅ Service Worker (Offline + Atualização de cache) */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js");
+  });
+}
 </script>
+
 </body>
 </html>
