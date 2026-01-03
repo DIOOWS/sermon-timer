@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
   <title>Sermon Timer</title>
 
+  <!-- ✅ PWA / Ícones -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
 
+  <!-- ✅ Tema -->
   <meta name="theme-color" content="#F4B400">
   <meta name="background-color" content="#0B0B0B">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -95,24 +97,26 @@
       box-shadow: 0 0 0 4px rgba(244,180,0,0.12);
     }
 
+    /* ✅ Premium compact buttons */
     .btn{
       width:100%;
       border:1px solid rgba(255,255,255,0.14);
       background: rgba(255,255,255,0.06);
       color:var(--text);
-      padding: 10px 12px;
+      padding: 9px 10px;
       border-radius: 999px;
       font-weight: 950;
-      font-size: 13px;
+      font-size: 12px;
       cursor:pointer;
       box-shadow: var(--shadow2);
       display:flex;
       align-items:center;
       justify-content:center;
-      gap:8px;
+      gap:7px;
       white-space:nowrap;
       transition: transform .06s ease, background .2s ease, border .2s ease;
       user-select:none;
+      min-height: 36px;
     }
     .btn:active{ transform: scale(0.985); }
     .btn:disabled{ opacity:.45; cursor:not-allowed; box-shadow:none; }
@@ -137,10 +141,11 @@
       background: rgba(239,68,68,.12);
       color: #fecaca;
     }
-    .btn .ic{ font-size: 14px; opacity: .95; }
+    .btn .ic{ font-size: 13px; opacity: .95; }
 
     .hidden{ display:none; }
 
+    /* Plan */
     .plan{
       margin-top:10px;
       border:1px solid rgba(255,255,255,0.12);
@@ -178,12 +183,12 @@
       display:flex;
       justify-content:flex-end;
       align-items:center;
-      min-width: 130px;
+      min-width: 120px;
       gap:10px;
     }
     .planRow .mins input{
-      max-width: 84px;
-      padding: 9px 10px;
+      max-width: 78px;
+      padding: 8px 8px;
       border-radius: 12px;
       font-size: 13px;
       text-align:center;
@@ -198,22 +203,23 @@
       margin-top:10px;
       text-align:center;
       font-weight:900;
-      font-size:13px;
+      font-size:12px;
       color: rgba(248,250,252,0.85);
-      padding: 10px 12px;
+      padding: 9px 10px;
       border-radius: 14px;
       border: 1px solid rgba(255,255,255,0.10);
       background: rgba(255,255,255,0.05);
     }
 
+    /* ✅ TopBar: grid compact */
     .topBar{
-      display:flex;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
       gap:8px;
-      flex-wrap:wrap;
       align-items:center;
     }
-    .topBar .btn{ width:auto; flex: 1 1 auto; }
 
+    /* Status */
     .statusLine{
       display:flex;
       align-items:center;
@@ -229,9 +235,10 @@
       flex: 0 0 auto;
     }
 
+    /* ✅ Metrics compact */
     .metrics{
       display:grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap:8px;
       margin-top: 10px;
     }
@@ -239,12 +246,13 @@
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 14px;
-      padding: 10px 12px;
+      padding: 8px 10px;
       box-shadow: var(--shadow2);
       min-width: 0;
+      text-align:center;
     }
-    .metric .label{ font-size:11px; color: var(--muted); font-weight:800; }
-    .metric .value{ font-size:16px; font-weight:1000; margin-top:3px; }
+    .metric .label{ font-size:10px; color: var(--muted); font-weight:800; }
+    .metric .value{ font-size:15px; font-weight:1000; margin-top:3px; }
 
     .topicTitle{
       text-align:center;
@@ -257,10 +265,10 @@
 
     .bigTimer{
       text-align:center;
-      font-size: 92px;
+      font-size: 90px;
       font-weight: 1000;
       letter-spacing: -0.05em;
-      margin-top: 10px;
+      margin-top: 12px;
       margin-bottom: 6px;
       color: #fff;
       font-variant-numeric: tabular-nums;
@@ -275,7 +283,7 @@
     }
 
     .barOuter{
-      height: 12px;
+      height: 11px;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.15);
       background: rgba(255,255,255,0.05);
@@ -308,11 +316,12 @@
     .badge{
       text-align:center;
       font-weight: 950;
-      padding: 11px 12px;
+      padding: 10px 10px;
       border-radius: 14px;
       border: 1px solid rgba(255,255,255,0.12);
       background: rgba(255,255,255,0.06);
       margin-top: 8px;
+      font-size:12px;
     }
 
     .controls{
@@ -329,7 +338,7 @@
       line-height:1.35;
     }
 
-    .bibleMode .topBar .btn:not(#exitBibleBtn),
+    /* ✅ Bible Mode – centraliza e aumenta */
     .bibleMode .metrics,
     .bibleMode #nextHint,
     .bibleMode #planBoxLive,
@@ -337,36 +346,70 @@
       display:none !important;
     }
 
+    .bibleMode #currentTopic{
+      margin-top: 10vh;
+      font-size: 28px;
+    }
+    .bibleMode #timeDisplay{
+      margin-top: 10px;
+      font-size: 120px;
+    }
+    .bibleMode .barOuter{
+      max-width: 520px;
+      margin-left:auto;
+      margin-right:auto;
+    }
+
+    /* ✅ Botão sair (pequeno, só Bible Mode) */
     #exitBibleBtn{
-      flex: 1 1 100%;
-      margin-top: 6px;
+      display:none;
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 9999;
+      padding: 7px 10px;
+      min-height: 30px;
+      font-size: 11px;
+      border-radius: 999px;
       background: rgba(244,180,0,0.14);
       border-color: rgba(244,180,0,0.30);
       color:#ffe07a;
-      display:flex;
+      box-shadow: var(--shadow2);
+      width: auto;
     }
-
     .bibleMode #exitBibleBtn{
       display:flex !important;
     }
 
-    .bibleMode .topicTitle{ margin-top: 20px; font-size: 26px; }
-    .bibleMode .bigTimer{ font-size: 104px; }
-
+    /* Mobile portrait */
     @media (max-width: 520px){
       body{ padding: 10px; }
       .card{ padding: 12px; }
-      .metrics{ grid-template-columns: 1fr 1fr; }
-      .metric:last-child{ grid-column: 1 / -1; }
       .bigTimer{ font-size: 78px; }
+      .topBar{ grid-template-columns: repeat(2, 1fr); }
+      .metrics{ grid-template-columns: repeat(3, 1fr); }
     }
-    @media (max-width: 390px){
-      .metrics{ grid-template-columns: 1fr; }
-      .bigTimer{ font-size: 68px; }
-      .topBar .btn{ flex: 1 1 48%; }
-      .planRow{ flex-direction:column; align-items:stretch; }
-      .planRow .mins{ justify-content:flex-start; }
-      .planRow .mins input{ width: 110px; max-width:none; }
+
+    /* Landscape (deitado) */
+    @media (orientation: landscape) and (max-height: 520px){
+      body{ padding: 10px; }
+      .container{ max-width: 980px; }
+      .bigTimer{ font-size: 110px; }
+      .topicTitle{ font-size: 26px; }
+      .metrics{ grid-template-columns: repeat(3, 1fr); }
+      .topBar{ grid-template-columns: repeat(5, 1fr); }
+      .controls{ margin-top: 10px; }
+    }
+
+    /* Landscape no modo Bíblia: gigante */
+    @media (orientation: landscape) and (max-height: 520px){
+      .bibleMode #currentTopic{
+        margin-top: 8vh;
+        font-size: 34px;
+      }
+      .bibleMode #timeDisplay{
+        font-size: 160px;
+      }
     }
   </style>
 </head>
@@ -374,6 +417,7 @@
 <body>
 <div class="container">
 
+  <!-- SETUP -->
   <div id="setupCard" class="card">
     <h1>⏱️ Sermon Timer</h1>
     <p class="muted">Edite nomes e tempos • Distribuição automática ou manual • Templates.</p>
@@ -419,16 +463,18 @@
     </div>
   </div>
 
+  <!-- TIMER -->
   <div id="timerCard" class="card hidden">
 
-    <div class="topBar">
-      <button id="bibleModeBtn" class="btn warn"><span class="ic">📖</span>Modo Bíblia</button>
-      <button id="fullscreenBtn" class="btn warn"><span class="ic">⛶</span>Tela cheia</button>
-      <button id="wakelockBtn" class="btn warn"><span class="ic">☀</span>Tela ligada</button>
-      <button id="autoAdvanceBtn" class="btn primary"><span class="ic">⏭</span>Auto: OFF</button>
-      <button id="resetBtn" class="btn danger"><span class="ic">↩</span>Reset</button>
+    <!-- ✅ Sair do modo Bíblia (só aparece no Bible Mode) -->
+    <button id="exitBibleBtn" class="btn"><span class="ic">↩</span>Sair</button>
 
-      <button id="exitBibleBtn" class="btn"><span class="ic">↩</span>Sair do Modo Bíblia</button>
+    <div class="topBar">
+      <button id="bibleModeBtn" class="btn warn"><span class="ic">📖</span>Bíblia</button>
+      <button id="fullscreenBtn" class="btn warn"><span class="ic">⛶</span>Tela</button>
+      <button id="wakelockBtn" class="btn warn"><span class="ic">☀</span>Ligada</button>
+      <button id="autoAdvanceBtn" class="btn primary"><span class="ic">⏭</span>Auto OFF</button>
+      <button id="resetBtn" class="btn danger"><span class="ic">↩</span>Reset</button>
     </div>
 
     <h2 id="liveTitle">📌 Pregação</h2>
@@ -440,15 +486,15 @@
 
     <div class="metrics">
       <div class="metric">
-        <div class="label">Tempo total</div>
+        <div class="label">Total</div>
         <div class="value" id="metricTotal">00:00</div>
       </div>
       <div class="metric">
-        <div class="label">Tópico atual</div>
+        <div class="label">Atual</div>
         <div class="value" id="metricCurrentTotal">00:00</div>
       </div>
       <div class="metric">
-        <div class="label">Restante total</div>
+        <div class="label">Restante</div>
         <div class="value" id="metricTotalRemaining">00:00</div>
       </div>
     </div>
@@ -525,8 +571,7 @@ function updatePlanStats(){
   const total = (parseInt($("totalMinutes").value,10)||0)*60;
   const left = total - used;
 
-  stats.textContent =
-    `Usado: ${formatTime(used)} • Total: ${formatTime(total)} • Falta: ${formatTime(left)}`;
+  stats.textContent = `Usado: ${formatTime(used)} • Total: ${formatTime(total)} • Falta: ${formatTime(left)}`;
 }
 
 /* ✅ TITULO: não renderiza enquanto digita */
@@ -547,7 +592,6 @@ function updateMinutesLive(idx, value){
     updatePlanStats();
     return;
   }
-
   let minutes = parseInt(value,10);
   if(!isFinite(minutes)) return;
 
@@ -924,8 +968,8 @@ $("prevBtn").addEventListener("click", () => goToTopic(currentIndex-1));
 $("autoAdvanceBtn").addEventListener("click", () => {
   autoAdvance = !autoAdvance;
   $("autoAdvanceBtn").innerHTML = autoAdvance
-    ? `<span class="ic">⏭</span>Auto: ON`
-    : `<span class="ic">⏭</span>Auto: OFF`;
+    ? `<span class="ic">⏭</span>Auto ON`
+    : `<span class="ic">⏭</span>Auto OFF`;
   vibrate([60]);
 });
 
@@ -934,7 +978,6 @@ $("bibleModeBtn").addEventListener("click", () => {
   if(!bibleMode) enterBibleMode();
   else exitBibleMode();
 });
-
 $("exitBibleBtn").addEventListener("click", () => {
   exitBibleMode();
   vibrate([50]);
@@ -969,7 +1012,7 @@ async function requestWakeLock(){
     wakeLock = await navigator.wakeLock.request("screen");
     wakeLock.addEventListener("release", () => {
       wakeLock=null;
-      $("wakelockBtn").innerHTML = `<span class="ic">☀</span>Tela ligada`;
+      $("wakelockBtn").innerHTML = `<span class="ic">☀</span>Ligada`;
     });
     $("wakelockBtn").innerHTML = `<span class="ic">✅</span>Ligada`;
     vibrate([80]);
@@ -982,7 +1025,7 @@ async function releaseWakeLock(){
     if(wakeLock){
       await wakeLock.release();
       wakeLock=null;
-      $("wakelockBtn").innerHTML = `<span class="ic">☀</span>Tela ligada`;
+      $("wakelockBtn").innerHTML = `<span class="ic">☀</span>Ligada`;
     }
   }catch(e){}
 }
