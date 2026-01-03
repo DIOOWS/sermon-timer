@@ -194,6 +194,18 @@
       border-left: 4px solid rgba(244,180,0,0.88);
     }
 
+    .planStats{
+      margin-top:10px;
+      text-align:center;
+      font-weight:900;
+      font-size:13px;
+      color: rgba(248,250,252,0.85);
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.05);
+    }
+
     .topBar{
       display:flex;
       gap:8px;
@@ -317,13 +329,23 @@
       line-height:1.35;
     }
 
-    .bibleMode .topBar,
+    /* Bible Mode: agora mantém o botão de sair */
+    .bibleMode .topBar .btn:not(#exitBibleBtn),
     .bibleMode .metrics,
     .bibleMode #nextHint,
     .bibleMode #planBoxLive,
     .bibleMode .controls{
       display:none !important;
     }
+
+    #exitBibleBtn{
+      flex: 1 1 100%;
+      margin-top: 6px;
+      background: rgba(244,180,0,0.14);
+      border-color: rgba(244,180,0,0.30);
+      color:#ffe07a;
+    }
+
     .bibleMode .topicTitle{ margin-top: 20px; font-size: 26px; }
     .bibleMode .bigTimer{ font-size: 104px; }
 
@@ -378,6 +400,9 @@
 
     <div id="planBox" class="plan hidden"></div>
 
+    <!-- ✅ Indicador usado / total / falta -->
+    <div id="planStats" class="planStats hidden">Usado: 00:00 • Total: 00:00 • Falta: 00:00</div>
+
     <div class="row" style="margin-top:12px;">
       <button id="saveTemplateBtn" class="btn warn" disabled><span class="ic">💾</span>Salvar</button>
       <button id="loadTemplateBtn" class="btn warn"><span class="ic">📂</span>Carregar</button>
@@ -402,6 +427,9 @@
       <button id="wakelockBtn" class="btn warn"><span class="ic">☀</span>Tela ligada</button>
       <button id="autoAdvanceBtn" class="btn primary"><span class="ic">⏭</span>Auto: OFF</button>
       <button id="resetBtn" class="btn danger"><span class="ic">↩</span>Reset</button>
+
+      <!-- ✅ botão que continua visível no modo Bíblia -->
+      <button id="exitBibleBtn" class="btn"><span class="ic">↩</span>Sair do Modo Bíblia</button>
     </div>
 
     <h2 id="liveTitle">📌 Pregação</h2>
@@ -485,6 +513,23 @@ function resetWarnings(){
   warned30=warned10=warnedEnd=warnedYellow=warnedRed=false;
 }
 
+/* ✅ indicador usado/total/falta */
+function updatePlanStats(){
+  const stats = $("planStats");
+  if(plan.length===0){
+    stats.classList.add("hidden");
+    return;
+  }
+  stats.classList.remove("hidden");
+
+  const used = plan.reduce((a,t)=>a+t.durationSec,0);
+  const total = (parseInt($("totalMinutes").value,10)||0)*60;
+  const left = total - used;
+
+  stats.textContent =
+    `Usado: ${formatTime(used)} • Total: ${formatTime(total)} • Falta: ${formatTime(left)}`;
+}
+
 /* =============== Plan (EDITÁVEL) =============== */
 function buildPlan(){
   const n = parseInt($("mainTopicsCount").value,10);
@@ -498,7 +543,7 @@ function buildPlan(){
   $("autoDistBtn").disabled = false;
   $("fitRemainingBtn").disabled = false;
 
-  autoDistribute(); // mantém o comportamento original
+  autoDistribute();
 }
 
 function autoDistribute(){
@@ -517,7 +562,6 @@ function autoDistribute(){
   for(let i=1;i<=nMain;i++) plan[i].durationSec = eachMain;
   plan[plan.length-1].durationSec = conclSec;
 
-  // ajustar diferença
   const sum = plan.reduce((a,t)=>a+t.durationSec,0);
   const diff = totalSec - sum;
   if(diff !== 0) plan[plan.length-2].durationSec += diff;
@@ -528,7 +572,6 @@ function autoDistribute(){
   $("metricTotal").textContent = formatTime(totalSec);
 }
 
-/* ✅ manual: editar nome e minutos */
 function updateTitle(idx, value){
   plan[idx].title = value.trim() || plan[idx].title;
   renderPlan();
@@ -544,7 +587,6 @@ function updateMinutes(idx, value){
 window.updateTitle = updateTitle;
 window.updateMinutes = updateMinutes;
 
-/* ✅ Ajustar resto automaticamente */
 function fitRemaining(){
   const totalSec = (parseInt($("totalMinutes").value,10)||0)*60;
   if(totalSec <= 0) return alert("Tempo total inválido.");
@@ -552,13 +594,11 @@ function fitRemaining(){
   const usedSec = plan.reduce((a,t)=>a+t.durationSec,0);
   let diff = totalSec - usedSec;
 
-  // se já bateu
   if(diff === 0){
     alert("✅ Os tempos já somam o total certinho!");
     return;
   }
 
-  // se passou do total, corta do último bloco antes da conclusão
   if(diff < 0){
     alert("⚠️ Você passou do tempo total. Vou ajustar o último tópico para caber.");
     const lastAdjust = plan.length - 2;
@@ -566,7 +606,6 @@ function fitRemaining(){
     return renderPlan();
   }
 
-  // sobrou tempo: distribui igualmente nos tópicos principais
   const mainStart = 1;
   const mainEnd = plan.length - 2;
   const count = (mainEnd - mainStart) + 1;
@@ -576,7 +615,6 @@ function fitRemaining(){
     plan[i].durationSec += addEach;
   }
 
-  // sobra final vai pro último tópico principal
   const sum2 = plan.reduce((a,t)=>a+t.durationSec,0);
   const diff2 = totalSec - sum2;
   if(diff2 !== 0) plan[mainEnd].durationSec += diff2;
@@ -608,9 +646,10 @@ function renderPlan(updateLive=true){
 
   if(updateLive) renderLivePlan();
 
-  // total atualizado
   const totalSec = (parseInt($("totalMinutes").value,10)||0)*60;
   $("metricTotal").textContent = formatTime(totalSec);
+
+  updatePlanStats();
 }
 
 function renderLivePlan(){
@@ -632,8 +671,8 @@ function renderLivePlan(){
   });
 }
 
-/* =============== Templates (mantém) =============== */
-const STORAGE_KEY = "sermon_timer_templates_black_mustard_v2";
+/* =============== Templates =============== */
+const STORAGE_KEY = "sermon_timer_templates_black_mustard_v3";
 function getTemplates(){
   try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); }
   catch(e){ return []; }
@@ -680,7 +719,7 @@ function loadTemplate(){
   renderPlan();
 }
 
-/* =============== Setup Events =============== */
+/* Setup events */
 $("buildPlanBtn").addEventListener("click", buildPlan);
 $("autoDistBtn").addEventListener("click", autoDistribute);
 $("fitRemainingBtn").addEventListener("click", fitRemaining);
@@ -692,7 +731,7 @@ $("startBtn").addEventListener("click", () => {
   startPreaching();
 });
 
-/* =============== Timer Flow (mantém) =============== */
+/* Timer flow */
 function showTimer(){
   $("setupCard").classList.add("hidden");
   $("timerCard").classList.remove("hidden");
@@ -874,6 +913,12 @@ $("bibleModeBtn").addEventListener("click", () => {
   if(!bibleMode) enterBibleMode();
   else exitBibleMode();
 });
+
+$("exitBibleBtn").addEventListener("click", () => {
+  exitBibleMode();
+  vibrate([50]);
+});
+
 function enterBibleMode(){
   bibleMode=true;
   $("timerCard").classList.add("bibleMode");
@@ -922,14 +967,14 @@ async function releaseWakeLock(){
 }
 $("wakelockBtn").addEventListener("click", () => wakeLock ? releaseWakeLock() : requestWakeLock());
 
-/* ✅ Service Worker */
+/* Service Worker */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./service-worker.js");
   });
 }
 
-/* ✅ Shortcuts */
+/* Shortcuts */
 window.addEventListener("load", () => {
   const params = new URLSearchParams(window.location.search);
 
