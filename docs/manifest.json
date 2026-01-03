@@ -1,11 +1,14 @@
 {
   "name": "Sermon Timer",
-  "short_name": "Timer",
+  "short_name": "Sermon",
+  "description": "Timer de pregação com tópicos, alertas e modo Bíblia.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#111111",
+  "background_color": "#0B0B0B",
   "theme_color": "#F4B400",
+  "orientation": "portrait",
+  "categories": ["productivity", "utilities"],
   "icons": [
     {
       "src": "icons/icon-192.png",
