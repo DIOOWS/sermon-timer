@@ -352,13 +352,52 @@
       font-size: 11px;
       border-radius: 999px;
       background: rgba(244,180,0,0.14);
-      border-color: rgba(244,180,0,0.30);
+      border: 1px solid rgba(244,180,0,0.30);
       color:#ffe07a;
       box-shadow: var(--shadow2);
       width: auto;
     }
     .bibleMode #exitBibleBtn{
       display:flex !important;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+    }
+
+    /* ✅ Update Banner */
+    .updateBanner{
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(20,20,20,0.92);
+      border: 1px solid rgba(244,180,0,0.35);
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 16px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      z-index: 99999;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      font-weight:900;
+      font-size:12px;
+    }
+
+    .updateBanner button{
+      background: rgba(244,180,0,0.18);
+      border: 1px solid rgba(244,180,0,0.35);
+      color: #ffe07a;
+      padding: 8px 12px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-weight:1000;
+      font-size:12px;
+    }
+
+    .updateBanner button:active{
+      transform: scale(0.98);
     }
 
     /* Mobile */
@@ -377,18 +416,20 @@
       .topBar{ grid-template-columns: repeat(5, 1fr); }
     }
     @media (orientation: landscape) and (max-height: 520px){
-      .bibleMode #timeDisplay{
-        font-size: 200px;
-      }
-      .bibleMode #currentTopic{
-        margin-top: 6vh;
-        font-size: 40px;
-      }
+      .bibleMode #timeDisplay{ font-size: 200px; }
+      .bibleMode #currentTopic{ margin-top: 6vh; font-size: 40px; }
     }
   </style>
 </head>
 
 <body>
+
+  <!-- ✅ Update Banner -->
+  <div id="updateBanner" class="updateBanner hidden">
+    <span>✨ Nova versão disponível</span>
+    <button id="updateBtnBanner">Atualizar</button>
+  </div>
+
 <div class="container">
 
   <!-- SETUP -->
@@ -542,9 +583,7 @@ function updatePlanStats(){
 }
 
 /* ✅ TITULO */
-function updateTitleLive(idx, value){
-  plan[idx].title = value;
-}
+function updateTitleLive(idx, value){ plan[idx].title = value; }
 function updateTitleSave(idx, value){
   plan[idx].title = value.trim() || "Sem título";
   renderPlan();
@@ -559,16 +598,14 @@ function updateMinutesLive(idx, value){
     updatePlanStats();
     return;
   }
-  let minutes = parseInt(value,10);
+  const minutes = parseInt(value,10);
   if(!isFinite(minutes)) return;
-
   plan[idx].durationSec = minutes * 60;
   updatePlanStats();
 }
 function updateMinutesSave(idx, value){
   let minutes = parseInt(value,10);
   if(!minutes || minutes < 1) minutes = 1;
-
   plan[idx].durationSec = minutes * 60;
   renderPlan();
 }
@@ -641,9 +678,7 @@ function fitRemaining(){
   const count = (mainEnd - mainStart) + 1;
   const addEach = Math.floor(diff / count);
 
-  for(let i=mainStart; i<=mainEnd; i++){
-    plan[i].durationSec += addEach;
-  }
+  for(let i=mainStart; i<=mainEnd; i++){ plan[i].durationSec += addEach; }
 
   const sum2 = plan.reduce((a,t)=>a+t.durationSec,0);
   const diff2 = totalSec - sum2;
@@ -704,7 +739,7 @@ function renderLivePlan(){
 }
 
 /* Templates */
-const STORAGE_KEY = "sermon_timer_templates_black_mustard_v4";
+const STORAGE_KEY = "sermon_timer_templates_black_mustard_v5";
 function getTemplates(){
   try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); }
   catch(e){ return []; }
@@ -767,9 +802,7 @@ $("startBtn").addEventListener("click", () => {
 function showTimer(){
   $("setupCard").classList.add("hidden");
   $("timerCard").classList.remove("hidden");
-
-  // ✅ Ativa tap duplo no card do timer
-  $("timerCard").addEventListener("touchend", detectDoubleTap);
+  $("timerCard").addEventListener("touchend", detectDoubleTap, {passive:true});
   $("timerCard").addEventListener("dblclick", toggleBibleMode);
 }
 
@@ -893,24 +926,15 @@ function updateUIRealTime(){
     $("timeDisplay").textContent = formatTime(tick);
   }
 
-  if(progress >= 0.70 && progress < 0.90 && !warnedYellow){
-    vibrate(VIB_YELLOW); warnedYellow=true;
-  }
-  if(progress >= 0.90 && progress < 1.00 && !warnedRed){
-    vibrate(VIB_RED); warnedRed=true;
-  }
-  if(remaining <= 30 && remaining > 10 && !warned30){
-    vibrate(VIB_30); warned30=true;
-  }
-  if(remaining <= 10 && remaining > 0 && !warned10){
-    vibrate(VIB_10); warned10=true;
-  }
+  if(progress >= 0.70 && progress < 0.90 && !warnedYellow){ vibrate(VIB_YELLOW); warnedYellow=true; }
+  if(progress >= 0.90 && progress < 1.00 && !warnedRed){ vibrate(VIB_RED); warnedRed=true; }
+  if(remaining <= 30 && remaining > 10 && !warned30){ vibrate(VIB_30); warned30=true; }
+  if(remaining <= 10 && remaining > 0 && !warned10){ vibrate(VIB_10); warned10=true; }
   if(remaining <= 0 && !warnedEnd){
     vibrate(VIB_END); warnedEnd=true;
 
-    if(autoAdvance){
-      goToTopic(currentIndex+1);
-    } else {
+    if(autoAdvance){ goToTopic(currentIndex+1); }
+    else{
       running = false;
       elapsedBefore = total;
       $("pauseBtn").innerHTML = `<span class="ic">▶</span>Continuar`;
@@ -947,31 +971,22 @@ $("autoAdvanceBtn").addEventListener("click", () => {
 });
 
 /* Bible mode toggle */
-function toggleBibleMode(){
-  if(!bibleMode) enterBibleMode();
-  else exitBibleMode();
-}
-function detectDoubleTap(){
+function toggleBibleMode(){ !bibleMode ? enterBibleMode() : exitBibleMode(); }
+
+function detectDoubleTap(e){
+  const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+  if(tag === "input" || tag === "button") return;
+
   const now = Date.now();
-  if(now - lastTap < 280){
-    toggleBibleMode();
-  }
+  if(now - lastTap < 280){ toggleBibleMode(); }
   lastTap = now;
 }
 
 $("bibleModeBtn").addEventListener("click", toggleBibleMode);
 $("exitBibleBtn").addEventListener("click", exitBibleMode);
 
-function enterBibleMode(){
-  bibleMode=true;
-  $("timerCard").classList.add("bibleMode");
-  vibrate([80]);
-}
-function exitBibleMode(){
-  bibleMode=false;
-  $("timerCard").classList.remove("bibleMode");
-  vibrate([50]);
-}
+function enterBibleMode(){ bibleMode=true; $("timerCard").classList.add("bibleMode"); vibrate([80]); }
+function exitBibleMode(){ bibleMode=false; $("timerCard").classList.remove("bibleMode"); vibrate([50]); }
 
 /* Fullscreen */
 async function requestFullscreen(){
@@ -1011,20 +1026,35 @@ async function releaseWakeLock(){
 }
 $("wakelockBtn").addEventListener("click", () => wakeLock ? releaseWakeLock() : requestWakeLock());
 
-/* Service Worker */
+/* ✅ Detectar atualização do Service Worker */
+let newWorker = null;
+
+function showUpdateBanner(){ $("updateBanner").classList.remove("hidden"); }
+function forceUpdate(){ if(newWorker){ newWorker.postMessage({ action: "skipWaiting" }); } }
+
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js");
+  navigator.serviceWorker.register("./service-worker.js").then((reg) => {
+    reg.addEventListener("updatefound", () => {
+      newWorker = reg.installing;
+      newWorker.addEventListener("statechange", () => {
+        if(newWorker.state === "installed"){
+          if(navigator.serviceWorker.controller){ showUpdateBanner(); }
+        }
+      });
+    });
+  });
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    window.location.reload();
   });
 }
+
+$("updateBtnBanner").addEventListener("click", forceUpdate);
 
 /* Shortcuts */
 window.addEventListener("load", () => {
   const params = new URLSearchParams(window.location.search);
-
-  if(plan.length === 0){
-    buildPlan();
-  }
+  if(plan.length === 0){ buildPlan(); }
 
   if(params.get("mode") === "bible"){
     enterBibleMode();
@@ -1032,9 +1062,7 @@ window.addEventListener("load", () => {
     goToTopic(0);
   }
 
-  if(params.get("start") === "1"){
-    startPreaching();
-  }
+  if(params.get("start") === "1"){ startPreaching(); }
 });
 </script>
 

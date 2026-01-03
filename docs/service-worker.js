@@ -1,4 +1,5 @@
-aconst CACHE_NAME = "sermon-timer-v8"; // 🔥 MUDE ESSE NÚMERO SEMPRE QUE EDITAR O APP
+const CACHE_VERSION = "v10"; // 🔥 MUDE ISSO SEMPRE QUE ALTERAR O APP
+const CACHE_NAME = `sermon-timer-${CACHE_VERSION}`;
 
 const FILES_TO_CACHE = [
   "./",
@@ -13,7 +14,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_CACHE))
   );
-  self.skipWaiting(); // ✅ força instalar a nova versão
+  self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
@@ -26,7 +27,7 @@ self.addEventListener("activate", (event) => {
       )
     )
   );
-  self.clients.claim(); // ✅ força usar nova versão imediatamente
+  self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {
@@ -35,4 +36,10 @@ self.addEventListener("fetch", (event) => {
       return cachedResponse || fetch(event.request);
     })
   );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.action === "skipWaiting") {
+    self.skipWaiting();
+  }
 });
