@@ -1025,9 +1025,24 @@ async function forceUpdate(){
   $("updateBanner").classList.add("hidden");
 
   try{
-    if(newWorker){
+    // se houver SW esperando, ativa
+    const reg = await navigator.serviceWorker.getRegistration();
+    if(reg && reg.waiting){
+      reg.waiting.postMessage({ action: "skipWaiting" });
+    } else if(newWorker){
       newWorker.postMessage({ action: "skipWaiting" });
     }
+
+    // fallback: se o controllerchange não acontecer em 2.5s, recarrega 1 vez
+    setTimeout(() => {
+      window.location.href = window.location.href.split("?")[0] + "?u=" + Date.now();
+    }, 2500);
+
+  } catch(e){
+    console.log("Erro update:", e);
+    window.location.href = window.location.href.split("?")[0] + "?u=" + Date.now();
+  }
+}
 
     // 1º reload
     setTimeout(() => {
