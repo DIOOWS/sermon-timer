@@ -404,7 +404,37 @@
       .bibleMode #timeDisplay{ font-size: 200px; }
       .bibleMode #currentTopic{ margin-top: 6vh; font-size: 40px; }
     }
-  </style>
+  
+/* ✅ Update Banner */
+.updateBanner{
+  position: fixed;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow2);
+  font-weight: 900;
+  font-size: 12px;
+}
+.updateBanner button{
+  border-radius: 999px;
+  padding: 8px 12px;
+  border: 1px solid rgba(244,180,0,0.35);
+  background: rgba(244,180,0,0.16);
+  color:#ffe07a;
+  font-weight: 1000;
+  cursor:pointer;
+}
+
+</style>
 </head>
 
 <body>
@@ -1011,10 +1041,14 @@ async function releaseWakeLock(){
 }
 $("wakelockBtn").addEventListener("click", () => wakeLock ? releaseWakeLock() : requestWakeLock());
 
+
 /* ✅ Detectar atualização do Service Worker */
 let newWorker = null;
 
-function showUpdateBanner(){ $("updateBanner").classList.remove("hidden"); }
+function showUpdateBanner(){
+  $("updateBanner").classList.remove("hidden");
+}
+
 async function forceUpdate(){
   const btn = $("updateBtnBanner");
 
@@ -1025,7 +1059,6 @@ async function forceUpdate(){
   $("updateBanner").classList.add("hidden");
 
   try{
-    // se houver SW esperando, ativa
     const reg = await navigator.serviceWorker.getRegistration();
     if(reg && reg.waiting){
       reg.waiting.postMessage({ action: "skipWaiting" });
@@ -1044,33 +1077,15 @@ async function forceUpdate(){
   }
 }
 
-    // 1º reload
-    setTimeout(() => {
-      window.location.reload();
-    }, 600);
-
-    // 2º reload (garantia)
-    setTimeout(() => {
-      window.location.href = window.location.href.split("?")[0] + "?t=" + Date.now();
-    }, 1400);
-
-  } catch(e){
-    console.log("Erro update:", e);
-  }
-}
-
-  setTimeout(() => {
-    window.location.reload(true);
-  }, 700);
-}); } }
-
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./service-worker.js").then((reg) => {
     reg.addEventListener("updatefound", () => {
       newWorker = reg.installing;
       newWorker.addEventListener("statechange", () => {
         if(newWorker.state === "installed"){
-          if(navigator.serviceWorker.controller){ showUpdateBanner(); }
+          if(navigator.serviceWorker.controller){
+            showUpdateBanner();
+          }
         }
       });
     });
@@ -1097,9 +1112,7 @@ window.addEventListener("load", () => {
 
 
   const params = new URLSearchParams(window.location.search);
-  if(plan.length === 0){ buildPlan(); }
-
-  if(params.get("mode") === "bible"){
+if(params.get("mode") === "bible"){
     enterBibleMode();
     showTimer();
     goToTopic(0);
