@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <title>Timer de Pregação • Normal</title>
+
+  <style>
+    :root{
+      --bg1:#f6f7fb; --bg2:#eef1ff;
+      --card:#ffffffd8;
+      --text:#0f172a; --muted:rgba(15,23,42,.58);
+      --border:rgba(15,23,42,.10);
+      --shadow:0 12px 28px rgba(15,23,42,.10);
+      --shadow2:0 6px 14px rgba(15,23,42,.06);
+
+      --primary:#4f6cf7;
+      --primarySoft:rgba(79,108,247,.12);
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+
+      --r:18px;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 20% 10%, rgba(79,108,247,.16), transparent),
+                  radial-gradient(900px 550px at 90% 15%, rgba(245,158,11,.11), transparent),
+                  linear-gradient(180deg, var(--bg2), var(--bg1));
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      padding:14px;
+    }
+
+    .container{
+      width:100%;
+      max-width: 680px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin:0 auto;
+    }
+
+    .card{
+      background: var(--card);
+      border:1px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    h1,h2{ margin:0 0 8px 0; letter-spacing:-.02em; }
+    h1{ font-size:18px; font-weight:1000; }
+    h2{ font-size:16px; font-weight:1000; }
+
+    .muted{ color:var(--muted); font-size:12px; line-height:1.35; }
+    label.muted{ display:block; margin: 0 0 6px 2px; }
+
+    .row{ display:flex; gap:10px; }
+    .row>*{ flex:1; }
+
+    input{
+      width:100%;
+      padding: 11px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.96);
+      color: var(--text);
+      font-size: 14px;
+      outline:none;
+    }
+    input:focus{
+      border-color: rgba(79,108,247,0.40);
+      box-shadow: 0 0 0 4px rgba(79,108,247,0.10);
+    }
+
+    /* Buttons (premium small) */
+    .btn{
+      width:100%;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,0.92);
+      color:var(--text);
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-weight: 950;
+      font-size: 13px;
+      cursor:pointer;
+      box-shadow: var(--shadow2);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      white-space:nowrap;
+      transition: transform .06s ease, background .2s ease, border .2s ease;
+      user-select:none;
+    }
+    .btn:active{ transform: scale(0.985); }
+    .btn:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+
+    .btn.primary{ border-color: rgba(79,108,247,.30); background: rgba(79,108,247,.10); color:#2133c7; }
+    .btn.good{ border-color: rgba(34,197,94,.25); background: rgba(34,197,94,.10); color:#166534; }
+    .btn.warn{ border-color: rgba(245,158,11,.25); background: rgba(245,158,11,.10); color:#92400e; }
+    .btn.danger{ border-color: rgba(239,68,68,.25); background: rgba(239,68,68,.10); color:#991b1b; }
+    .btn .ic{ font-size: 14px; opacity: .95; }
+
+    .hidden{ display:none; }
+
+    /* Plan */
+    .plan{
+      margin-top:10px;
+      border:1px solid var(--border);
+      border-radius: 16px;
+      overflow:hidden;
+      background: rgba(255,255,255,0.95);
+    }
+    .planRow{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding: 12px;
+      border-top:1px solid rgba(15,23,42,0.06);
+    }
+    .planRow:first-child{ border-top:none; }
+    .planRow b{ font-size: 13px; }
+    .planRow span{ font-size: 12px; color: var(--muted); }
+    .planRow .mins{ display:flex; justify-content:flex-end; align-items:center; min-width: 120px; gap:10px; }
+    .planRow input{ max-width: 84px; padding: 9px 10px; border-radius: 12px; font-size: 13px; }
+    .activeRow{
+      background: rgba(79,108,247,0.10);
+      border-left: 4px solid rgba(79,108,247,0.85);
+    }
+
+    /* Timer layout */
+    .topBar{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .topBar .btn{ width:auto; flex: 1 1 auto; }
+
+    .statusLine{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:10px;
+      font-weight:900;
+      font-size:13px;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      background: var(--good);
+      box-shadow: 0 0 0 4px rgba(34,197,94,0.18);
+      flex: 0 0 auto;
+    }
+
+    /* Metrics */
+    .metrics{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:8px;
+      margin-top: 10px;
+    }
+    .metric{
+      background: rgba(255,255,255,0.95);
+      border: 1px solid rgba(15,23,42,0.10);
+      border-radius: 14px;
+      padding: 10px 12px;
+      box-shadow: var(--shadow2);
+      min-width: 0;
+    }
+    .metric .label{ font-size:11px; color: var(--muted); font-weight:800; }
+    .metric .value{ font-size:16px; font-weight:1000; margin-top:3px; }
+
+    /* Title */
+    .topicTitle{
+      text-align:center;
+      font-size: 22px;
+      font-weight: 1000;
+      margin-top: 14px;
+      letter-spacing:-.02em;
+    }
+
+    /* ===== Timer Normal Premium ===== */
+    .bigTimer{
+      text-align:center;
+      font-size: 92px;
+      font-weight: 1000;
+      letter-spacing: -0.05em;
+      margin-top: 10px;
+      margin-bottom: 6px;
+      color: #0f172a;
+      font-variant-numeric: tabular-nums;
+      animation: breathe 1.8s ease-in-out infinite;
+      user-select:none;
+    }
+
+    @keyframes breathe{
+      0%   { transform: scale(1); opacity: 1; }
+      50%  { transform: scale(1.018); opacity: 0.98; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Progress bar */
+    .barOuter{
+      height: 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(15,23,42,0.10);
+      background: rgba(15,23,42,0.05);
+      overflow:hidden;
+      margin: 14px 0 10px 0;
+    }
+    .barInner{
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background: rgba(79,108,247,0.85);
+      transition: width .12s linear;
+      position:relative;
+    }
+    .barInner::after{
+      content:"";
+      position:absolute;
+      top:0; left:-30%;
+      height:100%;
+      width:30%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+      animation: shimmer 1.1s ease-in-out infinite;
+    }
+    @keyframes shimmer{
+      0%{ left:-30%; }
+      100%{ left:110%; }
+    }
+
+    .badge{
+      text-align:center;
+      font-weight: 950;
+      padding: 11px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(15,23,42,0.10);
+      background: rgba(255,255,255,0.92);
+      margin-top: 8px;
+    }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      margin-top: 12px;
+    }
+
+    .footerTip{
+      text-align:center;
+      font-size: 11px;
+      color: rgba(15,23,42,0.55);
+      margin-top: 12px;
+      line-height:1.35;
+    }
+
+    /* Bible Mode */
+    .bibleMode .topBar,
+    .bibleMode .metrics,
+    .bibleMode #nextHint,
+    .bibleMode #planBoxLive,
+    .bibleMode .controls{
+      display:none !important;
+    }
+    .bibleMode .topicTitle{ margin-top: 20px; font-size: 26px; }
+    .bibleMode .bigTimer{ font-size: 104px; }
+
+    /* Mobile responsiveness */
+    @media (max-width: 520px){
+      body{ padding: 10px; }
+      .card{ padding: 12px; }
+      .metrics{ grid-template-columns: 1fr 1fr; }
+      .metric:last-child{ grid-column: 1 / -1; }
+      .bigTimer{ font-size: 78px; }
+    }
+    @media (max-width: 390px){
+      .metrics{ grid-template-columns: 1fr; }
+      .bigTimer{ font-size: 68px; }
+      .topBar .btn{ flex: 1 1 48%; }
+    }
+  </style>
+</head>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<meta name="theme-color" content="#4f6cf7">
+
+
+<body>
+<div class="container">
+
+  <!-- SETUP -->
+  <div id="setupCard" class="card">
+    <h1>⏱️ Timer de Pregação • Normal</h1>
+    <p class="muted">Introdução + N tópicos + Conclusão • Android • vibração • templates.</p>
+
+    <label class="muted">Título da Pregação</label>
+    <input id="sermonTitle" placeholder="Ex: A fé que vence"/>
+
+    <div class="row" style="margin-top:10px;">
+      <div>
+        <label class="muted">Tempo total (min)</label>
+        <input id="totalMinutes" type="number" min="1" max="180" value="30"/>
+      </div>
+      <div>
+        <label class="muted">Qtd tópicos principais</label>
+        <input id="mainTopicsCount" type="number" min="1" max="10" value="3"/>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <button id="buildPlanBtn" class="btn good"><span class="ic">🧩</span>Gerar Plano</button>
+      <button id="autoDistBtn" class="btn primary" disabled><span class="ic">⚡</span>Distribuir</button>
+    </div>
+
+    <div id="planBox" class="plan hidden"></div>
+
+    <div class="row" style="margin-top:12px;">
+      <button id="saveTemplateBtn" class="btn warn" disabled><span class="ic">💾</span>Salvar</button>
+      <button id="loadTemplateBtn" class="btn warn"><span class="ic">📂</span>Carregar</button>
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <button id="startBtn" class="btn primary" disabled><span class="ic">▶</span>Iniciar</button>
+    </div>
+
+    <div class="footerTip">
+      Chrome → ⋮ → <b>Adicionar à tela inicial</b>.
+      No timer: tela cheia + manter tela ligada.
+    </div>
+  </div>
+
+  <!-- TIMER -->
+  <div id="timerCard" class="card hidden">
+
+    <div class="topBar">
+      <button id="bibleModeBtn" class="btn warn"><span class="ic">📖</span>Modo Bíblia</button>
+      <button id="fullscreenBtn" class="btn warn"><span class="ic">⛶</span>Tela cheia</button>
+      <button id="wakelockBtn" class="btn warn"><span class="ic">☀</span>Tela ligada</button>
+      <button id="autoAdvanceBtn" class="btn primary"><span class="ic">⏭</span>Auto: OFF</button>
+      <button id="resetBtn" class="btn danger"><span class="ic">↩</span>Reset</button>
+    </div>
+
+    <h2 id="liveTitle">📌 Pregação</h2>
+
+    <div class="statusLine">
+      <span class="dot" id="statusDot"></span>
+      <span id="statusText">Tempo ok</span>
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="label">Tempo total</div>
+        <div class="value" id="metricTotal">00:00</div>
+      </div>
+      <div class="metric">
+        <div class="label">Tópico atual</div>
+        <div class="value" id="metricCurrentTotal">00:00</div>
+      </div>
+      <div class="metric">
+        <div class="label">Restante total</div>
+        <div class="value" id="metricTotalRemaining">00:00</div>
+      </div>
+    </div>
+
+    <div class="topicTitle" id="currentTopic">—</div>
+    <div class="bigTimer" id="timeDisplay">00:00</div>
+
+    <div class="barOuter"><div class="barInner" id="progressBar"></div></div>
+
+    <div class="badge" id="nextHint">Próximo: —</div>
+
+    <div class="controls">
+      <button id="prevBtn" class="btn"><span class="ic">⬅</span>Voltar</button>
+      <button id="pauseBtn" class="btn primary"><span class="ic">⏸</span>Pausar</button>
+      <button id="nextBtn" class="btn"><span class="ic">➡</span>Próximo</button>
+    </div>
+
+    <div id="planBoxLive" class="plan" style="margin-top:14px;"></div>
+
+    <div class="footerTip">
+      Alertas: 30s (curto), 10s (duplo), fim (longo).
+      *Vibração pode falhar em “Não perturbe”.*
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+let plan = [];
+let currentIndex = 0;
+
+let running = false;
+let startTime = 0;
+let elapsedBefore = 0;
+
+let warned30=false, warned10=false, warnedEnd=false, warnedYellow=false, warnedRed=false;
+
+let bibleMode = false;
+let autoAdvance = false;
+let wakeLock = null;
+
+let rafId = null;
+let lastShownSecond = null;
+
+const VIB_30 = [80];
+const VIB_10 = [80, 60, 80];
+const VIB_END = [260];
+const VIB_YELLOW = [120];
+const VIB_RED = [120, 80, 120];
+
+function vibrate(pattern){ if(navigator.vibrate) navigator.vibrate(pattern); }
+
+function formatTime(sec){
+  sec = Math.max(0, sec);
+  const m = Math.floor(sec/60);
+  const s = Math.floor(sec%60);
+  return String(m).padStart(2,'0')+":"+String(s).padStart(2,'0');
+}
+function resetWarnings(){
+  warned30=warned10=warnedEnd=warnedYellow=warnedRed=false;
+}
+
+/* =============== Plan =============== */
+function buildPlan(){
+  const n = parseInt($("mainTopicsCount").value,10);
+  if(!n || n<1) return alert("Quantidade de tópicos inválida.");
+
+  plan = [{title:"Introdução", durationSec:0}];
+  for(let i=1;i<=n;i++) plan.push({title:`Tópico ${i}`, durationSec:0});
+  plan.push({title:"Conclusão", durationSec:0});
+
+  $("planBox").classList.remove("hidden");
+  $("autoDistBtn").disabled = false;
+  autoDistribute();
+}
+
+function autoDistribute(){
+  const totalMin = parseInt($("totalMinutes").value,10);
+  const totalSec = totalMin * 60;
+  if(plan.length < 3) return;
+
+  const n = plan.length - 2;
+  const introSec = Math.round(totalSec * 0.10);
+  const conclSec = Math.round(totalSec * 0.15);
+  const mainTotal = totalSec - introSec - conclSec;
+  const eachMain = Math.floor(mainTotal / n);
+
+  plan[0].durationSec = introSec;
+  for(let i=1;i<=n;i++) plan[i].durationSec = eachMain;
+  plan[plan.length-1].durationSec = conclSec;
+
+  const sum = plan.reduce((a,t)=>a+t.durationSec,0);
+  const diff = totalSec - sum;
+  if(diff !== 0) plan[plan.length-2].durationSec += diff;
+
+  renderPlan();
+  $("startBtn").disabled = false;
+  $("saveTemplateBtn").disabled = false;
+  $("metricTotal").textContent = formatTime(totalSec);
+}
+
+function manualAdjust(idx, minutes){
+  minutes = parseInt(minutes,10);
+  if(!minutes || minutes<1) minutes = 1;
+
+  const totalSec = (parseInt($("totalMinutes").value,10)||0)*60;
+  plan[idx].durationSec = minutes*60;
+
+  const remaining = totalSec - plan[idx].durationSec;
+  const others = plan.filter((_,i)=>i!==idx);
+
+  if(remaining <= 60){
+    alert("Tempo insuficiente para os outros tópicos.");
+    return autoDistribute();
+  }
+
+  const each = Math.floor(remaining / others.length);
+  others.forEach(t => t.durationSec = each);
+
+  const sum = plan.reduce((a,t)=>a+t.durationSec,0);
+  const diff = totalSec - sum;
+  if(diff !== 0){
+    const target = (plan.length-1 === idx) ? plan.length-2 : plan.length-1;
+    plan[target].durationSec += diff;
+  }
+  renderPlan();
+}
+window.manualAdjust = manualAdjust;
+
+function renderPlan(){
+  const box = $("planBox");
+  box.innerHTML = "";
+  plan.forEach((t, idx) => {
+    const row = document.createElement("div");
+    row.className = "planRow";
+    row.innerHTML = `
+      <div>
+        <b>${t.title}</b><br/>
+        <span>${formatTime(t.durationSec)}</span>
+      </div>
+      <div class="mins">
+        <input type="number" min="1" max="180" value="${Math.round(t.durationSec/60)}"
+          oninput="manualAdjust(${idx}, this.value)" />
+      </div>
+    `;
+    box.appendChild(row);
+  });
+  renderLivePlan();
+}
+
+function renderLivePlan(){
+  const live = $("planBoxLive");
+  live.innerHTML = "";
+  plan.forEach((t, idx) => {
+    const row = document.createElement("div");
+    row.className = "planRow" + (idx === currentIndex ? " activeRow" : "");
+    row.innerHTML = `
+      <div>
+        <b>${t.title}</b><br/>
+        <span>${formatTime(t.durationSec)}</span>
+      </div>
+      <div class="mins">
+        <span>${idx === currentIndex ? "⏱️ Agora" : ""}</span>
+      </div>
+    `;
+    live.appendChild(row);
+  });
+}
+
+/* =============== Templates =============== */
+const STORAGE_KEY = "pregacao_templates_normal_premium_v1";
+function getTemplates(){
+  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); }
+  catch(e){ return []; }
+}
+function saveTemplate(){
+  const name = prompt("Nome do template:");
+  if(!name) return;
+
+  const templates = getTemplates();
+  const data = {
+    name,
+    sermonTitle: $("sermonTitle").value || "",
+    totalMinutes: parseInt($("totalMinutes").value,10),
+    mainTopicsCount: parseInt($("mainTopicsCount").value,10),
+    plan
+  };
+  const idx = templates.findIndex(t => t.name.toLowerCase() === name.toLowerCase());
+  if(idx>=0) templates[idx]=data; else templates.push(data);
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(templates));
+  alert("Template salvo!");
+}
+function loadTemplate(){
+  const templates = getTemplates();
+  if(templates.length===0) return alert("Nenhum template salvo.");
+
+  const names = templates.map(t => t.name).join("\n• ");
+  const chosen = prompt("Digite o nome:\n\n• "+names);
+  if(!chosen) return;
+
+  const found = templates.find(t => t.name.toLowerCase() === chosen.toLowerCase());
+  if(!found) return alert("Template não encontrado.");
+
+  $("sermonTitle").value = found.sermonTitle || "";
+  $("totalMinutes").value = found.totalMinutes || 30;
+  $("mainTopicsCount").value = found.mainTopicsCount || 3;
+
+  plan = found.plan || [];
+  $("planBox").classList.remove("hidden");
+  $("autoDistBtn").disabled = plan.length===0;
+  $("startBtn").disabled = plan.length===0;
+
+  renderPlan();
+  $("metricTotal").textContent = formatTime((parseInt($("totalMinutes").value,10)||0)*60);
+}
+
+/* =============== Setup Events =============== */
+$("buildPlanBtn").addEventListener("click", buildPlan);
+$("autoDistBtn").addEventListener("click", autoDistribute);
+$("saveTemplateBtn").addEventListener("click", saveTemplate);
+$("loadTemplateBtn").addEventListener("click", loadTemplate);
+
+$("startBtn").addEventListener("click", () => {
+  if(plan.length===0) return alert("Gere o plano primeiro.");
+  startPreaching();
+});
+
+/* =============== Timer Flow =============== */
+function showTimer(){
+  $("setupCard").classList.add("hidden");
+  $("timerCard").classList.remove("hidden");
+}
+function showSetup(){
+  stopLoop();
+  releaseWakeLock();
+  exitBibleMode();
+  $("timerCard").classList.add("hidden");
+  $("setupCard").classList.remove("hidden");
+  currentIndex=0;
+}
+
+function startPreaching(){
+  const title = $("sermonTitle").value.trim();
+  $("liveTitle").textContent = title ? "📌 "+title : "📌 Pregação";
+
+  currentIndex=0;
+  showTimer();
+  goToTopic(0);
+  requestFullscreen();
+}
+
+function goToTopic(idx){
+  if(idx<0) idx=0;
+
+  if(idx>=plan.length){
+    stopLoop();
+    $("currentTopic").textContent = "🎉 Finalizado!";
+    $("statusText").textContent = "Concluído";
+    $("nextHint").textContent = "Você terminou todos os blocos.";
+    $("timeDisplay").textContent = "00:00";
+    vibrate([200,80,200,80,200]);
+    renderLivePlan();
+    return;
+  }
+
+  currentIndex=idx;
+  elapsedBefore=0;
+  startTime=Date.now();
+  running=true;
+  lastShownSecond=null;
+  resetWarnings();
+
+  $("currentTopic").textContent = plan[currentIndex].title;
+  const next = plan[currentIndex+1];
+  $("nextHint").textContent = next ? "Próximo: "+next.title : "Próximo: (fim)";
+  $("metricCurrentTotal").textContent = formatTime(plan[currentIndex].durationSec);
+
+  // Render inicial do timer
+  $("timeDisplay").textContent = formatTime(plan[currentIndex].durationSec);
+
+  renderLivePlan();
+  startLoop();
+}
+
+function startLoop(){
+  stopLoop();
+  rafId = requestAnimationFrame(loop);
+}
+function loop(){
+  updateUIRealTime();
+  rafId = requestAnimationFrame(loop);
+}
+function stopLoop(){
+  if(rafId) cancelAnimationFrame(rafId);
+  rafId=null;
+}
+
+/* ===== Helpers ===== */
+function totalRemainingSeconds(){
+  const current = plan[currentIndex];
+  const total = current.durationSec;
+
+  let elapsed = elapsedBefore;
+  if(running) elapsed += (Date.now()-startTime)/1000;
+
+  const currentRemaining = Math.max(0, total - elapsed);
+  let nextSum=0;
+  for(let i=currentIndex+1;i<plan.length;i++) nextSum += plan[i].durationSec;
+
+  return currentRemaining + nextSum;
+}
+
+function setStatus(progress){
+  const dot = $("statusDot");
+
+  if(progress < 0.70){
+    dot.style.background = "var(--good)";
+    dot.style.boxShadow = "0 0 0 4px rgba(34,197,94,0.18)";
+    $("statusText").textContent = "Tempo ok";
+  }else if(progress < 0.90){
+    dot.style.background = "var(--warn)";
+    dot.style.boxShadow = "0 0 0 4px rgba(245,158,11,0.20)";
+    $("statusText").textContent = "Chegando no final";
+  }else{
+    dot.style.background = "var(--danger)";
+    dot.style.boxShadow = "0 0 0 4px rgba(239,68,68,0.20)";
+    $("statusText").textContent = "Final do tópico!";
+  }
+}
+
+/* =============== REAL TIME =============== */
+function updateUIRealTime(){
+  const current = plan[currentIndex];
+  if(!current) return;
+
+  const total = current.durationSec;
+
+  let elapsed = elapsedBefore;
+  if(running) elapsed += (Date.now() - startTime)/1000;
+
+  let remaining = total - elapsed;
+  if(!isFinite(remaining)) remaining = total;
+
+  const progress = (total > 0) ? (elapsed / total) : 1;
+
+  $("progressBar").style.width = `${Math.min(progress,1)*100}%`;
+  $("metricTotalRemaining").textContent = formatTime(totalRemainingSeconds());
+  setStatus(progress);
+
+  // tick garantido
+  const tick = Math.max(0, Math.round(remaining));
+  if(tick !== lastShownSecond){
+    lastShownSecond = tick;
+    $("timeDisplay").textContent = formatTime(tick);
+  }
+
+  // alerts
+  if(progress >= 0.70 && progress < 0.90 && !warnedYellow){
+    vibrate(VIB_YELLOW); warnedYellow=true;
+  }
+  if(progress >= 0.90 && progress < 1.00 && !warnedRed){
+    vibrate(VIB_RED); warnedRed=true;
+  }
+  if(remaining <= 30 && remaining > 10 && !warned30){
+    vibrate(VIB_30); warned30=true;
+  }
+  if(remaining <= 10 && remaining > 0 && !warned10){
+    vibrate(VIB_10); warned10=true;
+  }
+  if(remaining <= 0 && !warnedEnd){
+    vibrate(VIB_END); warnedEnd=true;
+
+    if(autoAdvance){
+      goToTopic(currentIndex+1);
+    } else {
+      running = false;
+      elapsedBefore = total;
+      $("pauseBtn").innerHTML = `<span class="ic">▶</span>Continuar`;
+    }
+  }
+}
+
+/* =============== Controls =============== */
+$("resetBtn").addEventListener("click", showSetup);
+
+$("pauseBtn").addEventListener("click", () => {
+  if(running){
+    elapsedBefore += (Date.now()-startTime)/1000;
+    running=false;
+    $("pauseBtn").innerHTML = `<span class="ic">▶</span>Continuar`;
+    $("statusText").textContent = "Pausado";
+  }else{
+    startTime = Date.now();
+    running=true;
+    $("pauseBtn").innerHTML = `<span class="ic">⏸</span>Pausar`;
+    if(!rafId) startLoop();
+  }
+});
+
+$("nextBtn").addEventListener("click", () => goToTopic(currentIndex+1));
+$("prevBtn").addEventListener("click", () => goToTopic(currentIndex-1));
+
+$("autoAdvanceBtn").addEventListener("click", () => {
+  autoAdvance = !autoAdvance;
+  $("autoAdvanceBtn").innerHTML = autoAdvance
+    ? `<span class="ic">⏭</span>Auto: ON`
+    : `<span class="ic">⏭</span>Auto: OFF`;
+  vibrate([60]);
+});
+
+/* Bible mode */
+$("bibleModeBtn").addEventListener("click", () => {
+  if(!bibleMode) enterBibleMode();
+  else exitBibleMode();
+});
+function enterBibleMode(){
+  bibleMode=true;
+  $("timerCard").classList.add("bibleMode");
+  vibrate([80]);
+}
+function exitBibleMode(){
+  bibleMode=false;
+  $("timerCard").classList.remove("bibleMode");
+}
+
+/* Fullscreen */
+async function requestFullscreen(){
+  try{
+    const el=document.documentElement;
+    if(el.requestFullscreen) await el.requestFullscreen();
+  }catch(e){}
+}
+$("fullscreenBtn").addEventListener("click", requestFullscreen);
+
+/* Wake Lock */
+async function requestWakeLock(){
+  try{
+    if(!("wakeLock" in navigator)){
+      alert("Wake Lock não suportado.");
+      return;
+    }
+    wakeLock = await navigator.wakeLock.request("screen");
+    wakeLock.addEventListener("release", () => {
+      wakeLock=null;
+      $("wakelockBtn").innerHTML = `<span class="ic">☀</span>Tela ligada`;
+    });
+    $("wakelockBtn").innerHTML = `<span class="ic">✅</span>Ligada`;
+    vibrate([80]);
+  }catch(err){
+    alert("Não foi possível ativar. Tente novamente.");
+  }
+}
+async function releaseWakeLock(){
+  try{
+    if(wakeLock){
+      await wakeLock.release();
+      wakeLock=null;
+      $("wakelockBtn").innerHTML = `<span class="ic">☀</span>Tela ligada`;
+    }
+  }catch(e){}
+}
+$("wakelockBtn").addEventListener("click", () => wakeLock ? releaseWakeLock() : requestWakeLock());
+</script>
+</body>
+</html>
