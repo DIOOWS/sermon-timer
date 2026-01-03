@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v11"; // 🔥 MUDE ISSO SEMPRE QUE ALTERAR O APP
+const CACHE_VERSION = "v12"; // 🔥 MUDE ISSO SEMPRE QUE ALTERAR O APP
 const CACHE_NAME = `sermon-timer-${CACHE_VERSION}`;
 
 const FILES_TO_CACHE = [

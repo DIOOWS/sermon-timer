@@ -257,16 +257,20 @@
 
     .topicTitle{
       text-align:center;
-      font-size: 22px;
+      font-size: clamp(18px, 5vw, 24px);
       font-weight: 1000;
       margin-top: 14px;
       letter-spacing:-.02em;
       color: #fff;
-    }
+          padding: 0 12px;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      max-width: 100%;
+}
 
     .bigTimer{
       text-align:center;
-      font-size: 90px;
+      font-size: clamp(64px, 14vw, 96px);
       font-weight: 1000;
       letter-spacing: -0.05em;
       margin-top: 12px;
@@ -331,21 +335,39 @@
       display:none !important;
     }
 
+    /* ✅ Centraliza e evita “estouro” */
+    .bibleMode #liveTitle{ display:none; }
+
     .bibleMode #currentTopic{
-      margin-top: 12vh;
-      font-size: 34px;
+      margin-top: 10vh;
+      font-size: clamp(22px, 5vw, 40px);
+      line-height: 1.15;
+      padding: 0 14px;
+      text-align: center;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      max-width: 100%;
     }
+
     .bibleMode #timeDisplay{
       margin-top: 14px;
-      font-size: 160px;
+      font-size: clamp(88px, 18vw, 200px);
+      line-height: 1;
+      padding: 0 10px;
+      max-width: 100%;
+    }
+
+    /* evita que o card “estoure” */
+    .bibleMode.card{
+      overflow:hidden;
     }
 
     /* ✅ Botão sair (pequeno, só Bible Mode) */
     #exitBibleBtn{
       display:none;
       position: fixed;
-      top: 12px;
-      right: 12px;
+      top: 10px;
+      right: 10px;
       z-index: 9999;
       padding: 7px 10px;
       min-height: 30px;
@@ -363,44 +385,7 @@
       justify-content:center;
       gap:8px;
     }
-
-    /* ✅ Update Banner */
-    .updateBanner{
-      position: fixed;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(20,20,20,0.92);
-      border: 1px solid rgba(244,180,0,0.35);
-      color: #fff;
-      padding: 10px 12px;
-      border-radius: 16px;
-      display:flex;
-      align-items:center;
-      gap:12px;
-      z-index: 99999;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.55);
-      backdrop-filter: blur(8px);
-      font-weight:900;
-      font-size:12px;
-    }
-
-    .updateBanner button{
-      background: rgba(244,180,0,0.18);
-      border: 1px solid rgba(244,180,0,0.35);
-      color: #ffe07a;
-      padding: 8px 12px;
-      border-radius: 999px;
-      cursor:pointer;
-      font-weight:1000;
-      font-size:12px;
-    }
-
-    .updateBanner button:active{
-      transform: scale(0.98);
-    }
-
-    /* Mobile */
+/* Mobile */
     @media (max-width: 520px){
       body{ padding: 10px; }
       .card{ padding: 12px; }
@@ -1030,7 +1015,39 @@ $("wakelockBtn").addEventListener("click", () => wakeLock ? releaseWakeLock() : 
 let newWorker = null;
 
 function showUpdateBanner(){ $("updateBanner").classList.remove("hidden"); }
-function forceUpdate(){ if(newWorker){ newWorker.postMessage({ action: "skipWaiting" }); } }
+async function forceUpdate(){
+  const btn = $("updateBtnBanner");
+
+  btn.textContent = "Atualizando...";
+  btn.disabled = true;
+
+  // some o banner imediatamente
+  $("updateBanner").classList.add("hidden");
+
+  try{
+    if(newWorker){
+      newWorker.postMessage({ action: "skipWaiting" });
+    }
+
+    // 1º reload
+    setTimeout(() => {
+      window.location.reload();
+    }, 600);
+
+    // 2º reload (garantia)
+    setTimeout(() => {
+      window.location.href = window.location.href.split("?")[0] + "?t=" + Date.now();
+    }, 1400);
+
+  } catch(e){
+    console.log("Erro update:", e);
+  }
+}
+
+  setTimeout(() => {
+    window.location.reload(true);
+  }, 700);
+}); } }
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./service-worker.js").then((reg) => {
@@ -1045,7 +1062,8 @@ if ("serviceWorker" in navigator) {
   });
 
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    window.location.reload();
+    $("updateBanner").classList.add("hidden");
+    window.location.href = window.location.href.split("?")[0] + "?v=" + Date.now();
   });
 }
 
@@ -1053,6 +1071,16 @@ $("updateBtnBanner").addEventListener("click", forceUpdate);
 
 /* Shortcuts */
 window.addEventListener("load", () => {
+  // ✅ se não tiver worker esperando, não mostra banner
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.getRegistration().then((reg) => {
+      if(reg && !reg.waiting){
+        $("updateBanner").classList.add("hidden");
+      }
+    });
+  }
+
+
   const params = new URLSearchParams(window.location.search);
   if(plan.length === 0){ buildPlan(); }
 
