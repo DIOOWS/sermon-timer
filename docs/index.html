@@ -329,7 +329,6 @@
       line-height:1.35;
     }
 
-    /* Bible Mode: agora mantém o botão de sair */
     .bibleMode .topBar .btn:not(#exitBibleBtn),
     .bibleMode .metrics,
     .bibleMode #nextHint,
@@ -344,6 +343,11 @@
       background: rgba(244,180,0,0.14);
       border-color: rgba(244,180,0,0.30);
       color:#ffe07a;
+      display:flex;
+    }
+
+    .bibleMode #exitBibleBtn{
+      display:flex !important;
     }
 
     .bibleMode .topicTitle{ margin-top: 20px; font-size: 26px; }
@@ -370,7 +374,6 @@
 <body>
 <div class="container">
 
-  <!-- SETUP -->
   <div id="setupCard" class="card">
     <h1>⏱️ Sermon Timer</h1>
     <p class="muted">Edite nomes e tempos • Distribuição automática ou manual • Templates.</p>
@@ -399,8 +402,6 @@
     </div>
 
     <div id="planBox" class="plan hidden"></div>
-
-    <!-- ✅ Indicador usado / total / falta -->
     <div id="planStats" class="planStats hidden">Usado: 00:00 • Total: 00:00 • Falta: 00:00</div>
 
     <div class="row" style="margin-top:12px;">
@@ -418,7 +419,6 @@
     </div>
   </div>
 
-  <!-- TIMER -->
   <div id="timerCard" class="card hidden">
 
     <div class="topBar">
@@ -428,7 +428,6 @@
       <button id="autoAdvanceBtn" class="btn primary"><span class="ic">⏭</span>Auto: OFF</button>
       <button id="resetBtn" class="btn danger"><span class="ic">↩</span>Reset</button>
 
-      <!-- ✅ botão que continua visível no modo Bíblia -->
       <button id="exitBibleBtn" class="btn"><span class="ic">↩</span>Sair do Modo Bíblia</button>
     </div>
 
@@ -513,7 +512,7 @@ function resetWarnings(){
   warned30=warned10=warnedEnd=warnedYellow=warnedRed=false;
 }
 
-/* ✅ indicador usado/total/falta */
+/* ✅ indicador */
 function updatePlanStats(){
   const stats = $("planStats");
   if(plan.length===0){
@@ -530,7 +529,42 @@ function updatePlanStats(){
     `Usado: ${formatTime(used)} • Total: ${formatTime(total)} • Falta: ${formatTime(left)}`;
 }
 
-/* =============== Plan (EDITÁVEL) =============== */
+/* ✅ TITULO: não renderiza enquanto digita */
+function updateTitleLive(idx, value){
+  plan[idx].title = value;
+}
+function updateTitleSave(idx, value){
+  plan[idx].title = value.trim() || "Sem título";
+  renderPlan();
+}
+window.updateTitleLive = updateTitleLive;
+window.updateTitleSave = updateTitleSave;
+
+/* ✅ TEMPO: não volta pra 1 enquanto digita */
+function updateMinutesLive(idx, value){
+  if(value === ""){
+    plan[idx].durationSec = 0;
+    updatePlanStats();
+    return;
+  }
+
+  let minutes = parseInt(value,10);
+  if(!isFinite(minutes)) return;
+
+  plan[idx].durationSec = minutes * 60;
+  updatePlanStats();
+}
+function updateMinutesSave(idx, value){
+  let minutes = parseInt(value,10);
+  if(!minutes || minutes < 1) minutes = 1;
+
+  plan[idx].durationSec = minutes * 60;
+  renderPlan();
+}
+window.updateMinutesLive = updateMinutesLive;
+window.updateMinutesSave = updateMinutesSave;
+
+/* =============== Plan =============== */
 function buildPlan(){
   const n = parseInt($("mainTopicsCount").value,10);
   if(!n || n<1) return alert("Quantidade de tópicos inválida.");
@@ -571,21 +605,6 @@ function autoDistribute(){
   $("saveTemplateBtn").disabled = false;
   $("metricTotal").textContent = formatTime(totalSec);
 }
-
-function updateTitle(idx, value){
-  plan[idx].title = value.trim() || plan[idx].title;
-  renderPlan();
-}
-
-function updateMinutes(idx, value){
-  let minutes = parseInt(value,10);
-  if(!minutes || minutes < 1) minutes = 1;
-  plan[idx].durationSec = minutes * 60;
-  renderPlan(false);
-}
-
-window.updateTitle = updateTitle;
-window.updateMinutes = updateMinutes;
 
 function fitRemaining(){
   const totalSec = (parseInt($("totalMinutes").value,10)||0)*60;
@@ -632,13 +651,15 @@ function renderPlan(updateLive=true){
     row.innerHTML = `
       <div class="left">
         <input value="${t.title.replaceAll('"','&quot;')}"
-          oninput="updateTitle(${idx}, this.value)" />
+          oninput="updateTitleLive(${idx}, this.value)"
+          onblur="updateTitleSave(${idx}, this.value)" />
         <span>${formatTime(t.durationSec)}</span>
       </div>
       <div class="mins">
         <input type="number" min="1" max="180"
           value="${Math.round(t.durationSec/60)}"
-          oninput="updateMinutes(${idx}, this.value)" />
+          oninput="updateMinutesLive(${idx}, this.value)"
+          onblur="updateMinutesSave(${idx}, this.value)" />
       </div>
     `;
     box.appendChild(row);
@@ -671,7 +692,7 @@ function renderLivePlan(){
   });
 }
 
-/* =============== Templates =============== */
+/* Templates */
 const STORAGE_KEY = "sermon_timer_templates_black_mustard_v3";
 function getTemplates(){
   try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); }
