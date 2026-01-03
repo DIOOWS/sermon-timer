@@ -69,6 +69,7 @@
       padding: 14px;
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
+      position: relative;
     }
 
     h1,h2{ margin:0 0 8px 0; letter-spacing:-.02em; }
@@ -211,7 +212,7 @@
       background: rgba(255,255,255,0.05);
     }
 
-    /* ✅ TopBar: grid compact */
+    /* ✅ TopBar grid compact */
     .topBar{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
@@ -235,7 +236,7 @@
       flex: 0 0 auto;
     }
 
-    /* ✅ Metrics compact */
+    /* Metrics compact */
     .metrics{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
@@ -276,12 +277,14 @@
       user-select:none;
       text-shadow: 0 10px 30px rgba(0,0,0,0.55);
     }
+
     @keyframes breathe{
       0%   { transform: scale(1); opacity: 1; }
       50%  { transform: scale(1.018); opacity: 0.98; }
       100% { transform: scale(1); opacity: 1; }
     }
 
+    /* Progress bar */
     .barOuter{
       height: 11px;
       border-radius: 999px;
@@ -298,19 +301,6 @@
       transition: width .12s linear;
       position:relative;
       box-shadow: 0 12px 24px rgba(244,180,0,0.18);
-    }
-    .barInner::after{
-      content:"";
-      position:absolute;
-      top:0; left:-30%;
-      height:100%;
-      width:30%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
-      animation: shimmer 1.1s ease-in-out infinite;
-    }
-    @keyframes shimmer{
-      0%{ left:-30%; }
-      100%{ left:110%; }
     }
 
     .badge{
@@ -330,34 +320,24 @@
       margin-top: 12px;
     }
 
-    .footerTip{
-      text-align:center;
-      font-size: 11px;
-      color: rgba(248,250,252,0.55);
-      margin-top: 12px;
-      line-height:1.35;
-    }
-
-    /* ✅ Bible Mode – centraliza e aumenta */
+    /* ✅ Bible Mode FULL */
     .bibleMode .metrics,
     .bibleMode #nextHint,
     .bibleMode #planBoxLive,
-    .bibleMode .controls{
+    .bibleMode .controls,
+    .bibleMode .topBar,
+    .bibleMode .statusLine,
+    .bibleMode .barOuter{
       display:none !important;
     }
 
     .bibleMode #currentTopic{
-      margin-top: 10vh;
-      font-size: 28px;
+      margin-top: 12vh;
+      font-size: 34px;
     }
     .bibleMode #timeDisplay{
-      margin-top: 10px;
-      font-size: 120px;
-    }
-    .bibleMode .barOuter{
-      max-width: 520px;
-      margin-left:auto;
-      margin-right:auto;
+      margin-top: 14px;
+      font-size: 160px;
     }
 
     /* ✅ Botão sair (pequeno, só Bible Mode) */
@@ -381,34 +361,28 @@
       display:flex !important;
     }
 
-    /* Mobile portrait */
+    /* Mobile */
     @media (max-width: 520px){
       body{ padding: 10px; }
       .card{ padding: 12px; }
       .bigTimer{ font-size: 78px; }
       .topBar{ grid-template-columns: repeat(2, 1fr); }
-      .metrics{ grid-template-columns: repeat(3, 1fr); }
     }
 
-    /* Landscape (deitado) */
+    /* Landscape */
     @media (orientation: landscape) and (max-height: 520px){
-      body{ padding: 10px; }
       .container{ max-width: 980px; }
       .bigTimer{ font-size: 110px; }
       .topicTitle{ font-size: 26px; }
-      .metrics{ grid-template-columns: repeat(3, 1fr); }
       .topBar{ grid-template-columns: repeat(5, 1fr); }
-      .controls{ margin-top: 10px; }
     }
-
-    /* Landscape no modo Bíblia: gigante */
     @media (orientation: landscape) and (max-height: 520px){
-      .bibleMode #currentTopic{
-        margin-top: 8vh;
-        font-size: 34px;
-      }
       .bibleMode #timeDisplay{
-        font-size: 160px;
+        font-size: 200px;
+      }
+      .bibleMode #currentTopic{
+        margin-top: 6vh;
+        font-size: 40px;
       }
     }
   </style>
@@ -456,17 +430,12 @@
     <div class="row" style="margin-top:10px;">
       <button id="startBtn" class="btn primary" disabled><span class="ic">▶</span>Iniciar</button>
     </div>
-
-    <div class="footerTip">
-      ✅ Edite o <b>nome</b> e o <b>tempo</b> de cada parte.
-      Use “Ajustar Resto” para distribuir o tempo sobrando automaticamente.
-    </div>
   </div>
 
   <!-- TIMER -->
   <div id="timerCard" class="card hidden">
 
-    <!-- ✅ Sair do modo Bíblia (só aparece no Bible Mode) -->
+    <!-- ✅ Sair do modo Bíblia -->
     <button id="exitBibleBtn" class="btn"><span class="ic">↩</span>Sair</button>
 
     <div class="topBar">
@@ -513,11 +482,6 @@
     </div>
 
     <div id="planBoxLive" class="plan" style="margin-top:14px;"></div>
-
-    <div class="footerTip">
-      Alertas: 30s (curto), 10s (duplo), fim (longo).
-      *Vibração pode falhar em “Não perturbe”.*
-    </div>
   </div>
 </div>
 
@@ -539,6 +503,9 @@ let wakeLock = null;
 
 let rafId = null;
 let lastShownSecond = null;
+
+/* ✅ Tap duplo */
+let lastTap = 0;
 
 const VIB_30 = [80];
 const VIB_10 = [80, 60, 80];
@@ -574,7 +541,7 @@ function updatePlanStats(){
   stats.textContent = `Usado: ${formatTime(used)} • Total: ${formatTime(total)} • Falta: ${formatTime(left)}`;
 }
 
-/* ✅ TITULO: não renderiza enquanto digita */
+/* ✅ TITULO */
 function updateTitleLive(idx, value){
   plan[idx].title = value;
 }
@@ -585,7 +552,7 @@ function updateTitleSave(idx, value){
 window.updateTitleLive = updateTitleLive;
 window.updateTitleSave = updateTitleSave;
 
-/* ✅ TEMPO: não volta pra 1 enquanto digita */
+/* ✅ TEMPO */
 function updateMinutesLive(idx, value){
   if(value === ""){
     plan[idx].durationSec = 0;
@@ -737,7 +704,7 @@ function renderLivePlan(){
 }
 
 /* Templates */
-const STORAGE_KEY = "sermon_timer_templates_black_mustard_v3";
+const STORAGE_KEY = "sermon_timer_templates_black_mustard_v4";
 function getTemplates(){
   try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); }
   catch(e){ return []; }
@@ -800,7 +767,12 @@ $("startBtn").addEventListener("click", () => {
 function showTimer(){
   $("setupCard").classList.add("hidden");
   $("timerCard").classList.remove("hidden");
+
+  // ✅ Ativa tap duplo no card do timer
+  $("timerCard").addEventListener("touchend", detectDoubleTap);
+  $("timerCard").addEventListener("dblclick", toggleBibleMode);
 }
+
 function showSetup(){
   stopLoop();
   releaseWakeLock();
@@ -896,6 +868,7 @@ function setStatus(progress){
   }
 }
 
+/* REAL TIME */
 function updateUIRealTime(){
   const current = plan[currentIndex];
   if(!current) return;
@@ -973,15 +946,21 @@ $("autoAdvanceBtn").addEventListener("click", () => {
   vibrate([60]);
 });
 
-/* Bible mode */
-$("bibleModeBtn").addEventListener("click", () => {
+/* Bible mode toggle */
+function toggleBibleMode(){
   if(!bibleMode) enterBibleMode();
   else exitBibleMode();
-});
-$("exitBibleBtn").addEventListener("click", () => {
-  exitBibleMode();
-  vibrate([50]);
-});
+}
+function detectDoubleTap(){
+  const now = Date.now();
+  if(now - lastTap < 280){
+    toggleBibleMode();
+  }
+  lastTap = now;
+}
+
+$("bibleModeBtn").addEventListener("click", toggleBibleMode);
+$("exitBibleBtn").addEventListener("click", exitBibleMode);
 
 function enterBibleMode(){
   bibleMode=true;
@@ -991,6 +970,7 @@ function enterBibleMode(){
 function exitBibleMode(){
   bibleMode=false;
   $("timerCard").classList.remove("bibleMode");
+  vibrate([50]);
 }
 
 /* Fullscreen */
