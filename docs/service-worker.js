@@ -1,10 +1,13 @@
-const CACHE_NAME = "sermon-timer-v4";
+const CACHE_NAME = "sermon-timer-v5";
 const ASSETS = [
   "./",
   "./index.html",
   "./manifest.json",
+  "./service-worker.js",
   "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "./icons/icon-512.png",
+  "./screenshots/screen1.png",
+  "./screenshots/screen2.png"
 ];
 
 self.addEventListener("install", (event) => {
@@ -17,7 +20,9 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : null)))
+      Promise.all(keys.map((key) => {
+        if (key !== CACHE_NAME) return caches.delete(key);
+      }))
     )
   );
   self.clients.claim();
@@ -25,6 +30,6 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    caches.match(event.request).then((res) => res || fetch(event.request))
   );
 });

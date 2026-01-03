@@ -3,21 +3,18 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-  <title>Timer de Pregação</title>
+  <title>Sermon Timer</title>
 
-  <!-- ✅ PWA / Ícones (Android + iOS) -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-  <!-- ✅ Tema preto+mostarda (remove fundo branco e melhora splash) -->
   <meta name="theme-color" content="#F4B400">
   <meta name="background-color" content="#0B0B0B">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <style>
     :root{
-      /* Theme */
       --bg:#0b0b0b;
       --bg2:#111111;
       --card: rgba(255,255,255,0.06);
@@ -26,11 +23,9 @@
       --muted:rgba(248,250,252,.62);
       --border:rgba(255,255,255,.12);
 
-      /* Accent (Mostarda) */
       --primary:#F4B400;
       --primarySoft:rgba(244,180,0,.14);
 
-      /* Status */
       --good:#22c55e;
       --warn:#f59e0b;
       --danger:#ef4444;
@@ -46,8 +41,8 @@
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background:
-        radial-gradient(900px 650px at 20% 10%, rgba(244,180,0,0.20), transparent),
-        radial-gradient(900px 650px at 90% 20%, rgba(0,0,0,0.7), transparent),
+        radial-gradient(900px 650px at 20% 10%, rgba(244,180,0,0.22), transparent),
+        radial-gradient(900px 650px at 90% 20%, rgba(0,0,0,0.75), transparent),
         linear-gradient(180deg, var(--bg), var(--bg2));
       color:var(--text);
       min-height:100vh;
@@ -100,7 +95,6 @@
       box-shadow: 0 0 0 4px rgba(244,180,0,0.12);
     }
 
-    /* Buttons (premium, smaller) */
     .btn{
       width:100%;
       border:1px solid rgba(255,255,255,0.14);
@@ -147,7 +141,6 @@
 
     .hidden{ display:none; }
 
-    /* Plan */
     .plan{
       margin-top:10px;
       border:1px solid rgba(255,255,255,0.12);
@@ -166,14 +159,41 @@
     .planRow:first-child{ border-top:none; }
     .planRow b{ font-size: 13px; }
     .planRow span{ font-size: 12px; color: var(--muted); }
-    .planRow .mins{ display:flex; justify-content:flex-end; align-items:center; min-width: 120px; gap:10px; }
-    .planRow input{ max-width: 84px; padding: 9px 10px; border-radius: 12px; font-size: 13px; }
+
+    .planRow .left{
+      flex: 1;
+      min-width: 0;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .planRow .left input{
+      padding: 10px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      background: rgba(0,0,0,0.28);
+    }
+
+    .planRow .mins{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      min-width: 130px;
+      gap:10px;
+    }
+    .planRow .mins input{
+      max-width: 84px;
+      padding: 9px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      text-align:center;
+    }
+
     .activeRow{
       background: rgba(244,180,0,0.14);
       border-left: 4px solid rgba(244,180,0,0.88);
     }
 
-    /* Timer layout */
     .topBar{
       display:flex;
       gap:8px;
@@ -197,7 +217,6 @@
       flex: 0 0 auto;
     }
 
-    /* Metrics */
     .metrics{
       display:grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -215,7 +234,6 @@
     .metric .label{ font-size:11px; color: var(--muted); font-weight:800; }
     .metric .value{ font-size:16px; font-weight:1000; margin-top:3px; }
 
-    /* Title */
     .topicTitle{
       text-align:center;
       font-size: 22px;
@@ -225,7 +243,6 @@
       color: #fff;
     }
 
-    /* ===== Timer Normal Premium ===== */
     .bigTimer{
       text-align:center;
       font-size: 92px;
@@ -239,14 +256,12 @@
       user-select:none;
       text-shadow: 0 10px 30px rgba(0,0,0,0.55);
     }
-
     @keyframes breathe{
       0%   { transform: scale(1); opacity: 1; }
       50%  { transform: scale(1.018); opacity: 0.98; }
       100% { transform: scale(1); opacity: 1; }
     }
 
-    /* Progress bar */
     .barOuter{
       height: 12px;
       border-radius: 999px;
@@ -302,7 +317,6 @@
       line-height:1.35;
     }
 
-    /* Bible Mode */
     .bibleMode .topBar,
     .bibleMode .metrics,
     .bibleMode #nextHint,
@@ -313,7 +327,6 @@
     .bibleMode .topicTitle{ margin-top: 20px; font-size: 26px; }
     .bibleMode .bigTimer{ font-size: 104px; }
 
-    /* Mobile responsiveness */
     @media (max-width: 520px){
       body{ padding: 10px; }
       .card{ padding: 12px; }
@@ -325,6 +338,9 @@
       .metrics{ grid-template-columns: 1fr; }
       .bigTimer{ font-size: 68px; }
       .topBar .btn{ flex: 1 1 48%; }
+      .planRow{ flex-direction:column; align-items:stretch; }
+      .planRow .mins{ justify-content:flex-start; }
+      .planRow .mins input{ width: 110px; max-width:none; }
     }
   </style>
 </head>
@@ -334,8 +350,8 @@
 
   <!-- SETUP -->
   <div id="setupCard" class="card">
-    <h1>⏱️ Timer de Pregação</h1>
-    <p class="muted">Tema preto + mostarda • Android • vibração • templates.</p>
+    <h1>⏱️ Sermon Timer</h1>
+    <p class="muted">Edite nomes e tempos • Distribuição automática ou manual • Templates.</p>
 
     <label class="muted">Título da Pregação</label>
     <input id="sermonTitle" placeholder="Ex: A fé que vence"/>
@@ -353,7 +369,11 @@
 
     <div class="row" style="margin-top:10px;">
       <button id="buildPlanBtn" class="btn good"><span class="ic">🧩</span>Gerar Plano</button>
-      <button id="autoDistBtn" class="btn primary" disabled><span class="ic">⚡</span>Distribuir</button>
+      <button id="autoDistBtn" class="btn primary" disabled><span class="ic">⚡</span>Distribuir Auto</button>
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <button id="fitRemainingBtn" class="btn warn" disabled><span class="ic">🧠</span>Ajustar Resto</button>
     </div>
 
     <div id="planBox" class="plan hidden"></div>
@@ -368,8 +388,8 @@
     </div>
 
     <div class="footerTip">
-      Chrome → ⋮ → <b>Adicionar à tela inicial</b>.
-      No timer: tela cheia + manter tela ligada.
+      ✅ Edite o <b>nome</b> e o <b>tempo</b> de cada parte.
+      Use “Ajustar Resto” para distribuir o tempo sobrando automaticamente.
     </div>
   </div>
 
@@ -465,7 +485,7 @@ function resetWarnings(){
   warned30=warned10=warnedEnd=warnedYellow=warnedRed=false;
 }
 
-/* =============== Plan =============== */
+/* =============== Plan (EDITÁVEL) =============== */
 function buildPlan(){
   const n = parseInt($("mainTopicsCount").value,10);
   if(!n || n<1) return alert("Quantidade de tópicos inválida.");
@@ -476,7 +496,9 @@ function buildPlan(){
 
   $("planBox").classList.remove("hidden");
   $("autoDistBtn").disabled = false;
-  autoDistribute();
+  $("fitRemainingBtn").disabled = false;
+
+  autoDistribute(); // mantém o comportamento original
 }
 
 function autoDistribute(){
@@ -484,16 +506,18 @@ function autoDistribute(){
   const totalSec = totalMin * 60;
   if(plan.length < 3) return;
 
-  const n = plan.length - 2;
+  const nMain = plan.length - 2;
+
   const introSec = Math.round(totalSec * 0.10);
   const conclSec = Math.round(totalSec * 0.15);
   const mainTotal = totalSec - introSec - conclSec;
-  const eachMain = Math.floor(mainTotal / n);
+  const eachMain = Math.floor(mainTotal / nMain);
 
   plan[0].durationSec = introSec;
-  for(let i=1;i<=n;i++) plan[i].durationSec = eachMain;
+  for(let i=1;i<=nMain;i++) plan[i].durationSec = eachMain;
   plan[plan.length-1].durationSec = conclSec;
 
+  // ajustar diferença
   const sum = plan.reduce((a,t)=>a+t.durationSec,0);
   const diff = totalSec - sum;
   if(diff !== 0) plan[plan.length-2].durationSec += diff;
@@ -504,53 +528,89 @@ function autoDistribute(){
   $("metricTotal").textContent = formatTime(totalSec);
 }
 
-function manualAdjust(idx, minutes){
-  minutes = parseInt(minutes,10);
-  if(!minutes || minutes<1) minutes = 1;
-
-  const totalSec = (parseInt($("totalMinutes").value,10)||0)*60;
-  plan[idx].durationSec = minutes*60;
-
-  const remaining = totalSec - plan[idx].durationSec;
-  const others = plan.filter((_,i)=>i!==idx);
-
-  if(remaining <= 60){
-    alert("Tempo insuficiente para os outros tópicos.");
-    return autoDistribute();
-  }
-
-  const each = Math.floor(remaining / others.length);
-  others.forEach(t => t.durationSec = each);
-
-  const sum = plan.reduce((a,t)=>a+t.durationSec,0);
-  const diff = totalSec - sum;
-  if(diff !== 0){
-    const target = (plan.length-1 === idx) ? plan.length-2 : plan.length-1;
-    plan[target].durationSec += diff;
-  }
+/* ✅ manual: editar nome e minutos */
+function updateTitle(idx, value){
+  plan[idx].title = value.trim() || plan[idx].title;
   renderPlan();
 }
-window.manualAdjust = manualAdjust;
 
-function renderPlan(){
+function updateMinutes(idx, value){
+  let minutes = parseInt(value,10);
+  if(!minutes || minutes < 1) minutes = 1;
+  plan[idx].durationSec = minutes * 60;
+  renderPlan(false);
+}
+
+window.updateTitle = updateTitle;
+window.updateMinutes = updateMinutes;
+
+/* ✅ Ajustar resto automaticamente */
+function fitRemaining(){
+  const totalSec = (parseInt($("totalMinutes").value,10)||0)*60;
+  if(totalSec <= 0) return alert("Tempo total inválido.");
+
+  const usedSec = plan.reduce((a,t)=>a+t.durationSec,0);
+  let diff = totalSec - usedSec;
+
+  // se já bateu
+  if(diff === 0){
+    alert("✅ Os tempos já somam o total certinho!");
+    return;
+  }
+
+  // se passou do total, corta do último bloco antes da conclusão
+  if(diff < 0){
+    alert("⚠️ Você passou do tempo total. Vou ajustar o último tópico para caber.");
+    const lastAdjust = plan.length - 2;
+    plan[lastAdjust].durationSec = Math.max(60, plan[lastAdjust].durationSec + diff);
+    return renderPlan();
+  }
+
+  // sobrou tempo: distribui igualmente nos tópicos principais
+  const mainStart = 1;
+  const mainEnd = plan.length - 2;
+  const count = (mainEnd - mainStart) + 1;
+  const addEach = Math.floor(diff / count);
+
+  for(let i=mainStart; i<=mainEnd; i++){
+    plan[i].durationSec += addEach;
+  }
+
+  // sobra final vai pro último tópico principal
+  const sum2 = plan.reduce((a,t)=>a+t.durationSec,0);
+  const diff2 = totalSec - sum2;
+  if(diff2 !== 0) plan[mainEnd].durationSec += diff2;
+
+  renderPlan();
+}
+
+function renderPlan(updateLive=true){
   const box = $("planBox");
   box.innerHTML = "";
+
   plan.forEach((t, idx) => {
     const row = document.createElement("div");
     row.className = "planRow";
     row.innerHTML = `
-      <div>
-        <b>${t.title}</b><br/>
+      <div class="left">
+        <input value="${t.title.replaceAll('"','&quot;')}"
+          oninput="updateTitle(${idx}, this.value)" />
         <span>${formatTime(t.durationSec)}</span>
       </div>
       <div class="mins">
-        <input type="number" min="1" max="180" value="${Math.round(t.durationSec/60)}"
-          oninput="manualAdjust(${idx}, this.value)" />
+        <input type="number" min="1" max="180"
+          value="${Math.round(t.durationSec/60)}"
+          oninput="updateMinutes(${idx}, this.value)" />
       </div>
     `;
     box.appendChild(row);
   });
-  renderLivePlan();
+
+  if(updateLive) renderLivePlan();
+
+  // total atualizado
+  const totalSec = (parseInt($("totalMinutes").value,10)||0)*60;
+  $("metricTotal").textContent = formatTime(totalSec);
 }
 
 function renderLivePlan(){
@@ -572,8 +632,8 @@ function renderLivePlan(){
   });
 }
 
-/* =============== Templates =============== */
-const STORAGE_KEY = "pregacao_templates_black_mustard_v1";
+/* =============== Templates (mantém) =============== */
+const STORAGE_KEY = "sermon_timer_templates_black_mustard_v2";
 function getTemplates(){
   try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); }
   catch(e){ return []; }
@@ -614,15 +674,16 @@ function loadTemplate(){
   plan = found.plan || [];
   $("planBox").classList.remove("hidden");
   $("autoDistBtn").disabled = plan.length===0;
+  $("fitRemainingBtn").disabled = plan.length===0;
   $("startBtn").disabled = plan.length===0;
 
   renderPlan();
-  $("metricTotal").textContent = formatTime((parseInt($("totalMinutes").value,10)||0)*60);
 }
 
 /* =============== Setup Events =============== */
 $("buildPlanBtn").addEventListener("click", buildPlan);
 $("autoDistBtn").addEventListener("click", autoDistribute);
+$("fitRemainingBtn").addEventListener("click", fitRemaining);
 $("saveTemplateBtn").addEventListener("click", saveTemplate);
 $("loadTemplateBtn").addEventListener("click", loadTemplate);
 
@@ -631,7 +692,7 @@ $("startBtn").addEventListener("click", () => {
   startPreaching();
 });
 
-/* =============== Timer Flow =============== */
+/* =============== Timer Flow (mantém) =============== */
 function showTimer(){
   $("setupCard").classList.add("hidden");
   $("timerCard").classList.remove("hidden");
@@ -699,7 +760,6 @@ function stopLoop(){
   rafId=null;
 }
 
-/* ===== Helpers ===== */
 function totalRemainingSeconds(){
   const current = plan[currentIndex];
   const total = current.durationSec;
@@ -732,7 +792,6 @@ function setStatus(progress){
   }
 }
 
-/* =============== REAL TIME =============== */
 function updateUIRealTime(){
   const current = plan[currentIndex];
   if(!current) return;
@@ -751,14 +810,12 @@ function updateUIRealTime(){
   $("metricTotalRemaining").textContent = formatTime(totalRemainingSeconds());
   setStatus(progress);
 
-  // tick garantido
   const tick = Math.max(0, Math.round(remaining));
   if(tick !== lastShownSecond){
     lastShownSecond = tick;
     $("timeDisplay").textContent = formatTime(tick);
   }
 
-  // alerts
   if(progress >= 0.70 && progress < 0.90 && !warnedYellow){
     vibrate(VIB_YELLOW); warnedYellow=true;
   }
@@ -784,7 +841,7 @@ function updateUIRealTime(){
   }
 }
 
-/* =============== Controls =============== */
+/* Controls */
 $("resetBtn").addEventListener("click", showSetup);
 
 $("pauseBtn").addEventListener("click", () => {
@@ -865,12 +922,31 @@ async function releaseWakeLock(){
 }
 $("wakelockBtn").addEventListener("click", () => wakeLock ? releaseWakeLock() : requestWakeLock());
 
-/* ✅ Service Worker (Offline + Atualização de cache) */
+/* ✅ Service Worker */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./service-worker.js");
   });
 }
+
+/* ✅ Shortcuts */
+window.addEventListener("load", () => {
+  const params = new URLSearchParams(window.location.search);
+
+  if(plan.length === 0){
+    buildPlan();
+  }
+
+  if(params.get("mode") === "bible"){
+    enterBibleMode();
+    showTimer();
+    goToTopic(0);
+  }
+
+  if(params.get("start") === "1"){
+    startPreaching();
+  }
+});
 </script>
 
 </body>
