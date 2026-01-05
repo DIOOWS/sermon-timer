@@ -544,6 +544,12 @@
 <script>
 const $ = (id) => document.getElementById(id);
 
+// garante banner escondido logo no início
+window.addEventListener('DOMContentLoaded', () => {
+  const b = $('updateBanner');
+  if(b) b.classList.add('hidden');
+});
+
 let plan = [];
 let currentIndex = 0;
 
@@ -562,6 +568,7 @@ let lastShownSecond = null;
 
 /* ✅ Tap duplo */
 let lastTap = 0;
+let listenersAdded = false;
 
 const VIB_30 = [80];
 const VIB_10 = [80, 60, 80];
@@ -817,8 +824,13 @@ $("startBtn").addEventListener("click", () => {
 function showTimer(){
   $("setupCard").classList.add("hidden");
   $("timerCard").classList.remove("hidden");
-  $("timerCard").addEventListener("touchend", detectDoubleTap, {passive:true});
-  $("timerCard").addEventListener("dblclick", toggleBibleMode);
+
+  // adiciona listeners apenas 1 vez (evita duplicar ao voltar/entrar)
+  if(!listenersAdded){
+    $("timerCard").addEventListener("touchend", detectDoubleTap, {passive:true});
+    $("timerCard").addEventListener("dblclick", toggleBibleMode);
+    listenersAdded = true;
+  }
 }
 
 function showSetup(){
@@ -1058,18 +1070,28 @@ async function forceUpdate(){
   // some o banner imediatamente
   $("updateBanner").classList.add("hidden");
 
+  // marca que estamos atualizando (evita banner piscando)
+  sessionStorage.setItem("updating", "1");
+
+  // fallback: se o controllerchange não acontecer, recarrega 1 vez
+  if(window.__updateFallbackTimer) clearTimeout(window.__updateFallbackTimer);
+  window.__updateFallbackTimer = setTimeout(() => {
+    window.location.href = window.location.href.split("?")[0] + "?u=" + Date.now();
+  }, 2500);
+
   try{
     const reg = await navigator.serviceWorker.getRegistration();
     if(reg && reg.waiting){
       reg.waiting.postMessage({ action: "skipWaiting" });
-    } else if(newWorker){
+      return;
+    }
+    if(newWorker){
       newWorker.postMessage({ action: "skipWaiting" });
+      return;
     }
 
-    // fallback: se o controllerchange não acontecer em 2.5s, recarrega 1 vez
-    setTimeout(() => {
-      window.location.href = window.location.href.split("?")[0] + "?u=" + Date.now();
-    }, 2500);
+    // se não houver worker waiting, força update via reload cache-bust
+    window.location.href = window.location.href.split("?")[0] + "?u=" + Date.now();
 
   } catch(e){
     console.log("Erro update:", e);
@@ -1104,7 +1126,7 @@ window.addEventListener("load", () => {
   // ✅ se não tiver worker esperando, não mostra banner
   if("serviceWorker" in navigator){
     navigator.serviceWorker.getRegistration().then((reg) => {
-      if(reg && !reg.waiting){
+      if(reg && (!reg.waiting || sessionStorage.getItem("updating")==="1")){
         $("updateBanner").classList.add("hidden");
       }
     });
